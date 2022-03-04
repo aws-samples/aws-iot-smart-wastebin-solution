@@ -36,8 +36,6 @@ cost for using this sample. For full details, see the pricing pages for each AWS
 
 1. Deploy the latest CloudFormation template by following the link below for your preferred AWS region:
 
-https://console.aws.amazon.com/cloudformation/home?region=eu-west-1#/stacks/new?stackName=smart-bin-demo-app&templateURL=https://solution-repo-eu-west-1.s3.eu-west-1.amazonaws.com/1.0.1/smart-bin-stack.yml
-
 |Region|Launch Template|
 |------|---------------|
 |**US East (N. Virginia)** (us-east-1) | [![Launch CloudFormation Stack](docs/deploy-to-aws.png)]()|
