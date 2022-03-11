@@ -1,8 +1,7 @@
-#Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-#SPDX-License-Identifier: MIT-0
-
 #!/usr/bin/env bash
 
+#Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+#SPDX-License-Identifier: MIT-0
 
 mkdir -p build/certs/
 curl -o build/certs/AmazonRootCA1.pem https://www.amazontrust.com/repository/AmazonRootCA1.pem
@@ -15,7 +14,7 @@ chmod 644 build/certs/AmazonRootCA1.pem
 
 # Retrieve provisioning certificates from secrets manager
 SECRET_ARN=$(aws cloudformation list-exports | jq -r '.Exports[] | select(.Name=="FleetProvisioningCertificateSecret") | .Value')
-SECRET=$(aws secretsmanager get-secret-value --secret-id $SECRET_ARN | jq -r '.SecretString')
+SECRET=$(aws secretsmanager get-secret-value --secret-id "$SECRET_ARN" | jq -r '.SecretString')
 jq --arg s "$SECRET" -jn '$s | fromjson | .certificate' > build/certs/cert.pem
 jq --arg s "$SECRET" -jn '$s | fromjson | .privateKey' > build/certs/privateKey.pem
 
