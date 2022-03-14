@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-.PHONY : help init config deploy test lint nag clean delete
+.PHONY : help init config deploy iot-setup test lint nag clean delete
 .DEFAULT: help
 
 VENV_NAME ?= venv
@@ -62,28 +62,31 @@ deploy: $(VENV_NAME) package
 	--region $(AWS_REGION) \
 	--capabilities CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND \
 	--parameter-overrides \
-	  ArtefactsBucketName=$(BUCKET_NAME) \
-	  ArtefactsBucketOverride="true"
+	  ArtefactsBucketName=$(BUCKET_NAME)
 
 package: $(VENV_NAME) build
 	@printf "\n--> Packaging and uploading templates to the %s S3 bucket ...\n" $(BUCKET_NAME)
 	@$(VENV_NAME)/bin/aws cloudformation package \
   	--template-file ./cfn/main.template \
   	--s3-bucket $(BUCKET_NAME) \
-  	--s3-prefix aws-iot-smart-wastebin-solution \
+  	--s3-prefix $(STACK_NAME) \
   	--output-template-file ./cfn/packaged.template \
   	--region $(AWS_REGION)
 
 build: $(VENV_NAME)
 	@printf "\n--> Uploading artefacts to the %s S3 bucket ...\n" $(BUCKET_NAME)
-	@$(VENV_NAME)/bin/aws s3 cp ./src/greengrass-app-components s3://$(BUCKET_NAME)/aws-iot-smart-wastebin-solution/greengrass-app-components/ --recursive
+	@$(VENV_NAME)/bin/aws s3 cp ./src/greengrass-app-components s3://$(BUCKET_NAME)/$(STACK_NAME)/greengrass-app-components/ --recursive
 
 delete:
 	@printf "\n--> Deleting %s stack...\n" $(STACK_NAME)
-	@aws cloudformation delete-stack \
+	@$(VENV_NAME)/bin/aws cloudformation delete-stack \
             --stack-name $(STACK_NAME) \
             --region $(AWS_REGION)
 	@printf "\n--> $(STACK_NAME) deletion has been submitted, check AWS CloudFormation Console for an update..."
+
+# IOT device configuration
+iot-setup:
+	ci/fleet_provisioning_of_greengrass.sh $(STACK_NAME) $(AWS_REGION)
 
 # Tests
 test: $(VENV_NAME)

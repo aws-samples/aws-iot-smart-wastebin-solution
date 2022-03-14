@@ -3,17 +3,23 @@
 #Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #SPDX-License-Identifier: MIT-0
 
-mkdir -p build/certs/
-curl -o build/certs/AmazonRootCA1.pem https://www.amazontrust.com/repository/AmazonRootCA1.pem
+if [ -z "$2" ]; then
+    echo "Usage: ./ci/fleet_provisioning_of_greengrass.sh <STACK_NAME> <AWS_REGION>"
+    exit 1
+else
+  STACK_NAME="$1"
+  AWS_REGION="$2"
+fi
+
+mkdir -p ./build/certs/
+curl -o ./build/certs/AmazonRootCA1.pem https://www.amazontrust.com/repository/AmazonRootCA1.pem
 
 chmod 745 build
 chmod 700 build/certs
 chmod 644 build/certs/AmazonRootCA1.pem
 
-#cp AmazonRootCA1.pem build/certs/
-
 # Retrieve provisioning certificates from secrets manager
-SECRET_ARN=$(aws cloudformation list-exports | jq -r '.Exports[] | select(.Name=="FleetProvisioningCertificateSecret") | .Value')
+SECRET_ARN=$(aws cloudformation describe-stacks --stack-name "$STACK_NAME" --region "$AWS_REGION" --query "Stacks[0].Outputs[?OutputKey=='CertificateSecret'].OutputValue" --output text)
 SECRET=$(aws secretsmanager get-secret-value --secret-id "$SECRET_ARN" | jq -r '.SecretString')
 jq --arg s "$SECRET" -jn '$s | fromjson | .certificate' > build/certs/cert.pem
 jq --arg s "$SECRET" -jn '$s | fromjson | .privateKey' > build/certs/privateKey.pem
@@ -53,5 +59,5 @@ services:
         SerialNumber: W123
 EOF
 
-cp fleet_provision.sh build/
-chmod 755 build/fleet_provision.sh
+cp ./ci/fleet_provision.sh build/
+chmod 755 ./build/fleet_provision.sh
