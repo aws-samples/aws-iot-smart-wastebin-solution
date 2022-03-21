@@ -20,7 +20,7 @@ Parameters:
     AllowedPattern: ^[a-zA-Z0-9_]*$
 
   ArtefactsBucketName:
-    Description: S3 bucket name for the assets. Artefacts bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-).
+    Description: S3 bucket name for hosting greengrass custom component app. Artefacts bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-).
     Type: String
     AllowedPattern: ^[0-9a-zA-Z]+([0-9a-zA-Z-.]*[0-9a-zA-Z])*$
     ConstraintDescription: Artefacts bucket name can include numbers, lowercase letters, uppercase letters, periods (.), and hyphens (-). It cannot start or end with a hyphen (-).
@@ -44,14 +44,23 @@ Resources:
             Version: "2012-10-17"
             Statement:
               - Effect: Allow
-                Resource: '*'
+                Resource: !Sub arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:rolealias/*
                 Action:
                   - iot:CreateRoleAlias
                   - iot:UpdateRoleAlias
                   - iot:DeleteRoleAlias
+              - Effect: Allow
+                Resource: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:*
+                Action:
                   - logs:CreateLogGroup
                   - logs:CreateLogStream
+              - Effect: Allow
+                Resource: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:*:log-stream:*
+                Action:      
                   - logs:PutLogEvents
+              - Effect: Allow
+                Resource: !Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:role/*
+                Action:
                   - iam:PassRole
 
   RoleAliasProvisioner:
@@ -111,13 +120,25 @@ Resources:
                 Resource: '*'
                 Action:
                   - iot:CreateKeysAndCertificate
+              - Effect: Allow
+                Resource: !Sub arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:cert/*
+                Action:
                   - iot:UpdateCertificate
-                  - secretsmanager:DescribeSecret
-                  - secretsmanager:GetSecretValue
-                  - secretsmanager:PutSecretValue
-                  - secretsmanager:UpdateSecretVersionStage
+              - Effect: Allow
+                Resource: !Sub arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:*
+                Action:
+                - secretsmanager:DescribeSecret
+                - secretsmanager:GetSecretValue
+                - secretsmanager:PutSecretValue
+                - secretsmanager:UpdateSecretVersionStage
+              - Effect: Allow
+                Resource: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:*
+                Action:
                   - logs:CreateLogGroup
                   - logs:CreateLogStream
+              - Effect: Allow
+                Resource: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:*:log-stream:*
+                Action:      
                   - logs:PutLogEvents
 
   CertificateProvisioner:
@@ -260,18 +281,40 @@ Resources:
     Properties:
       Description: Permissions required for Greengrass token exchange
       PolicyDocument:
-        Version: "2012-10-17"
+        Version: '2012-10-17'
         Statement:
           - Effect: Allow
-            Resource: '*'
+            Resource: !Sub arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:cert/*
             Action:
               - iot:DescribeCertificate
+          - Effect: Allow
+            Resource: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:*
+            Action:
               - logs:CreateLogGroup
               - logs:CreateLogStream
-              - logs:PutLogEvents
               - logs:DescribeLogStreams
+          - Effect: Allow
+            Resource: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:*:log-stream:*
+            Action:      
+              - logs:PutLogEvents
+          - Effect: Allow
+            Resource:
+              - !Sub arn:${AWS::Partition}:s3:::${ArtefactsBucketName}
+              - !Sub arn:${AWS::Partition}:s3:::${ArtefactsBucketName}/*
+            Action:
+              - s3:GetObject
               - s3:GetBucketLocation
-              - s3:*
+          - Effect: Allow
+            Resource:
+              - !Sub arn:${AWS::Partition}:s3:::${TrashBinS3Bucket}
+              - !Sub arn:${AWS::Partition}:s3:::${TrashBinS3Bucket}/*
+            Action:
+              - s3:GetObject
+              - s3:PutObject
+              - s3:AbortMultipartUpload
+              - s3:ListMultipartUploadParts
+              - s3:GetBucketLocation
+
 
   TokenExchangeRoleAlias:
     Type: Custom::IotRoleAlias
@@ -284,20 +327,35 @@ Resources:
     Type: AWS::IoT::Policy
     Properties:
       PolicyDocument:
-        Version: "2012-10-17"
+        Version: '2012-10-17'
         Statement:
-          - Effect: Allow
-            Resource: '*'
-            Action:
-              - iot:Publish
-              - iot:Subscribe
-              - iot:Receive
-              - iot:Connect
-              - greengrass:*
-              - S3:*
-          - Effect: Allow
-            Resource: !GetAtt TokenExchangeRoleAlias.roleAliasArn
-            Action: iot:AssumeRoleWithCertificate
+        - Effect: Allow
+          Resource:
+            - !Sub arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topicfilter/*
+            - !Sub arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:client/*
+            - !Sub arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:cert/*
+            - !Sub arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/*
+          Action:
+            - iot:Publish
+            - iot:Subscribe
+            - iot:Receive
+            - iot:Connect
+        - Effect: Allow
+          Resource: '*'
+          Action:
+            - greengrass:*
+        - Effect: Allow
+          Resource: !GetAtt TokenExchangeRoleAlias.roleAliasArn
+          Action: iot:AssumeRoleWithCertificate
+        - Effect: Allow
+          Resource:
+            - !Sub arn:${AWS::Partition}:s3:::${TrashBinS3Bucket}
+            - !Sub arn:${AWS::Partition}:s3:::${TrashBinS3Bucket}/*
+          Action:
+            - s3:PutObject
+            - s3:AbortMultipartUpload
+            - s3:ListMultipartUploadParts
+            - s3:GetBucketLocation
 
   GreengrassProvisioningPolicy:
     Type: AWS::IoT::Policy
@@ -306,7 +364,7 @@ Resources:
         Version: "2012-10-17"
         Statement:
           - Effect: Allow
-            Resource: '*'
+            Resource: !Sub arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:client/*
             Action: iot:Connect
           - Effect: Allow
             Resource:
@@ -421,14 +479,27 @@ Resources:
               - Effect: Allow
                 Resource: '*'
                 Action:
-                  - logs:CreateLogGroup
-                  - logs:CreateLogStream
-                  - logs:PutLogEvents
-                  - rekognition:*
+                  - rekognition:DetectLabels
+                  - rekognition:GetTextDetection
+                  - rekognition:DetectText
+              - Effect: Allow
+                Resource:
+                  - !Sub arn:${AWS::Partition}:s3:::${TrashBinS3Bucket}
+                  - !Sub arn:${AWS::Partition}:s3:::${TrashBinS3Bucket}/*
+                Action:
                   - s3:Get*
                   - s3:List*
                   - s3-object-lambda:Get*
                   - s3-object-lambda:List*
+              - Effect: Allow
+                Resource: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:*
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+              - Effect: Allow
+                Resource: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:*:log-stream:*
+                Action:      
+                  - logs:PutLogEvents
 
   IoTAnalyticsPermission:
     Type: AWS::Lambda::Permission
@@ -700,14 +771,16 @@ Resources:
         ComponentVersion: 2.0.0
         Manifests:
         - Artifacts:
-          - URI: s3://${ArtefactsBucketName}/${AWS::StackName}/greengrass-app-components/monitor_wastebin_app.py
-          - URI: s3://${ArtefactsBucketName}/${AWS::StackName}/greengrass-app-components/image_stream.py
-          - URI: s3://${ArtefactsBucketName}/${AWS::StackName}/greengrass-app-components/hx711_i2c.py
-          - URI: s3://${ArtefactsBucketName}/${AWS::StackName}/greengrass-app-components/mqtt_publisher.py
-          - URI: s3://${ArtefactsBucketName}/${AWS::StackName}/greengrass-app-components/sensors.py
-          - URI: s3://${ArtefactsBucketName}/${AWS::StackName}/greengrass-app-components/requirements.txt
+          - URI: s3://${ArtefactsBucketName}/greengrass-app-components/monitor_wastebin_app.py
+          - URI: s3://${ArtefactsBucketName}/greengrass-app-components/image_stream.py
+          - URI: s3://${ArtefactsBucketName}/greengrass-app-components/hx711_i2c.py
+          - URI: s3://${ArtefactsBucketName}/greengrass-app-components/mqtt_publisher.py
+          - URI: s3://${ArtefactsBucketName}/greengrass-app-components/sensors.py
+          - URI: s3://${ArtefactsBucketName}/greengrass-app-components/requirements.txt
           Lifecycle:
             Install: pip3 install --user -r {artifacts:path}/requirements.txt
+            setEnv:
+              TRASH_BUCKET: ${TrashBinS3Bucket}
             Run: '
               export PYTHONPATH=$PYTHONPATH:{artifacts:decompressedPath}/stream_manager_sdk;
               python3 -u {artifacts:path}/monitor_wastebin_app.py

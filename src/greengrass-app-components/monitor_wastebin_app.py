@@ -62,7 +62,7 @@ if __name__ == "__main__":
 
         # Initilize Sensors
         temp_local_image_path = "/tmp/garbage_bin"
-        cloud_bucket_name = "hmb-304-iot-trashbins3bucket-1nynh6xbsxbys"  # TODO: hardcoded bucket name, has to be dynamic, SSM store maybe?
+        cloud_bucket_name = os.getenv('TRASH_BUCKET')  # TODO: hardcoded bucket name, has to be dynamic, SSM store maybe?
         image_name = "waste_image.jpg"
         location = "Greenhill"
         post_code = "HA11AA"

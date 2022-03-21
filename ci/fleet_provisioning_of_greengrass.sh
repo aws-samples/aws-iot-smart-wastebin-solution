@@ -9,6 +9,9 @@ if [ -z "$2" ]; then
 else
   STACK_NAME="$1"
   AWS_REGION="$2"
+  THING_NAME=`[ -z "$3" ] && echo "DemoWasteBin"`
+  LOCATION=`[ -z "$4" ] && echo "London"`
+  THING_SERIAL_NO=`[ -z "$5" ] && echo "W123"`
 fi
 
 mkdir -p ./build/certs/
@@ -54,10 +57,10 @@ services:
       claimCertificatePrivateKeyPath: $ROOT/certs/privateKey.pem
       rootCaPath: $ROOT/certs/AmazonRootCA1.pem
       templateParameters:
-        ThingName: DemoWasteBin
-        Location: London
-        SerialNumber: W123
+        ThingName: $THING_NAME
+        Location: $LOCATION
+        SerialNumber: $THING_SERIAL_NO
 EOF
 
-cp ./ci/fleet_provision.sh build/
+cp ./fleet_provision.sh build/
 chmod 755 ./build/fleet_provision.sh
