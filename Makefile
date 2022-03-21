@@ -102,5 +102,12 @@ nag:
 cfn-publish-package: build
 	zip -r packaged.zip -@ < ci/include.lst
 
+# GitHub actions
+test-cfn-lint:
+	cfn-lint cfn/*.template
+
+test-cfn-nag:
+	cfn_nag_scan --input-path cfn
+
 version:
 	@bumpversion --dry-run --list cfn/main.template | grep current_version | sed s/'^.*='//

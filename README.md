@@ -1,10 +1,12 @@
 ## AWS IoT Smart Wastebin solution
 
+[![Unit Tests](https://github.com/aws-samples/aws-iot-smart-wastebin-solution/workflows/Unit%20Tests/badge.svg)](https://github.com/aws-samples/aws-iot-smart-wastebin-solution/actions)
+
 This post provides an example of how to build a connected Trash Can IoT solution for local councils.
 As the IoT use cases involve complex ecosystem of technologies right from sensor, device management
-all the way through to analytics layer, the serverless architecture is great way to start small, validate and
+all the way through to analytics layer, the serverless architecture is a great way to start small, validate and
 deploy at scale.
-Hence this post walks you through AWS serverless key architecture components around device
+Hence, this post walks you through AWS serverless key architecture components around device
 provisioning, ingesting trash images and waste weight data through AWS IoT Core into AWS IoT
 Analytics, analyze trash image using Amazon Rekognition to enrich waste data and finally store into
 Amazon S3 storage for building waste heat map using Amazon QuickSight
@@ -36,28 +38,28 @@ cost for using this sample. For full details, see the pricing pages for each AWS
 
 1. Deploy the latest CloudFormation template by following the link below for your preferred AWS region:
 
-|Region|Launch Template|
-|------|---------------|
-|**US East (N. Virginia)** (us-east-1) | [![Launch CloudFormation Stack](docs/deploy-to-aws.png)]()|
-|**US West (Oregon)** (us-west-2) | [![Launch CloudFormation Stack](docs/deploy-to-aws.png)]()|
-|**EU (Ireland)** (eu-west-1) | [![Launch CloudFormation Stack](docs/deploy-to-aws.png)](https://console.aws.amazon.com/cloudformation/home?region=eu-west-1#/stacks/new?stackName=smart-bin-demo-app&templateURL=https://solution-repo-eu-west-1.s3.eu-west-1.amazonaws.com/1.0.1/smart-bin-stack.yml)|
-|**EU (London)** (eu-west-2) | [![Launch CloudFormation Stack](docs/deploy-to-aws.png)]()|
-|**EU (Frankfurt)** (eu-central-1) | [![Launch CloudFormation Stack](docs/deploy-to-aws.png)]()|
-|**AP (Sydney)** (ap-southeast-2) | [![Launch CloudFormation Stack](docs/deploy-to-aws.png)]()|
+| Region                                | Launch Template                                            |
+|---------------------------------------|------------------------------------------------------------|
+| **US East (N. Virginia)** (us-east-1) | [![Launch CloudFormation Stack](docs/deploy-to-aws.png)]() |
+| **US West (Oregon)** (us-west-2)      | [![Launch CloudFormation Stack](docs/deploy-to-aws.png)]() |
+| **EU (Ireland)** (eu-west-1)          | [![Launch CloudFormation Stack](docs/deploy-to-aws.png)]() |
+| **EU (London)** (eu-west-2)           | [![Launch CloudFormation Stack](docs/deploy-to-aws.png)]() |
+| **EU (Frankfurt)** (eu-central-1)     | [![Launch CloudFormation Stack](docs/deploy-to-aws.png)]() |
+| **AP (Sydney)** (ap-southeast-2)      | [![Launch CloudFormation Stack](docs/deploy-to-aws.png)]() |
 
 2. If prompted, login using your AWS account credentials.
 1. You should see a screen titled "*Create Stack*" at the "*Specify template*" step. The fields specifying the CloudFormation
    template are pre-populated. Choose the *Next* button at the bottom of the page.
 1. On the "*Specify stack details*" screen you can customize the following parameters of the CloudFormation stack:
 
-|Parameter label|Default|Description|
-|---------------|-------|-----------|
-|CreateMap|true|If True, this creates an Amazon Location Map.|
-|MapName|ExampleMap01|Must be a unique map resource name. No spaces allowed. For example, ExampleMap.|
-|MapPricingPlan|RequestBasedUsage|Specifies the pricing plan for your map resource.|
-|MapStyle|VectorEsriStreets|Specifies the map style selected from an available data providers.|
-|ResourceTags|LocationDetectApp|Tag resources, which can help you identify and categorize them.|
-|Environment|DEV|The type of environment to tag your infrastructure with.|
+| Parameter label | Default           | Description                                                                     |
+|-----------------|-------------------|---------------------------------------------------------------------------------|
+| CreateMap       | true              | If True, this creates an Amazon Location Map.                                   |
+| MapName         | ExampleMap01      | Must be a unique map resource name. No spaces allowed. For example, ExampleMap. |
+| MapPricingPlan  | RequestBasedUsage | Specifies the pricing plan for your map resource.                               |
+| MapStyle        | VectorEsriStreets | Specifies the map style selected from an available data providers.              |
+| ResourceTags    | LocationDetectApp | Tag resources, which can help you identify and categorize them.                 |
+| Environment     | DEV               | The type of environment to tag your infrastructure with.                        |
 
 When completed, choose *Next*
 1. [Configure stack options](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-console-add-tags.html) if desired, then choose *Next*.
@@ -78,7 +80,7 @@ To remove the stack:
 1. Open the AWS CloudFormation Console.
 1. Choose the *smart-bin-demo-app * project, press "*Delete Stack*" button.
 1. Your stack might take some time to be deleted. You can track its progress in the "Events" tab.
-1. When it is done, the status changes from "DELETE_IN_PROGRESS" to "DELETE_COMPLETE". It then disappear from the list.
+1. When it is done, the status changes from "DELETE_IN_PROGRESS" to "DELETE_COMPLETE". It then disappears from the list.
 
 
 
