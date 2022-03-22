@@ -28,14 +28,14 @@ To deploy the solution,
 2. clone the repository
 3. An S3 bucket to upload all the artifacts from the cloned respository under src/greengrass-app-component directory
 4. Upload all the artifacts to AWS S3 Bucket
-    1. On AWS Console, choose "*S3*" service
+    1. On AWS Console, choose "**S3**" service
     2. Choose your bucket created as mentioned step 3
-    3. Press "*Create folder*" button
-    4. Enter "*greengrass-app-component*" in folder name field and press "*Create folder*" button
-    5. Choose the "*greengrass-app-component*" folder and press "*Upload*" button
-    6. Press "*Add files*" button on upload screen and choose all the files from greengrass-app-component
-    7. Finally press "*Upload*" button
-    8. Please make sure that all the artifacts are under "*s3://<your bucket name>/greengrass-app-component*". This is very important to ensure that path is correct for successful deployment on edge gateway
+    3. Press "**Create folder**" button
+    4. Enter "**greengrass-app-component**" in folder name field and press "*Create folder*" button
+    5. Choose the "**greengrass-app-component**" folder and press "**Upload**" button
+    6. Press "**Add files**" button on upload screen and choose all the files from greengrass-app-component
+    7. Finally press "**Upload**" button
+    8. Please make sure that all the artifacts are under "**s3://<your bucket name>/greengrass-app-component**". This is very important to ensure that path is correct for successful deployment on edge gateway
 
 
 #### Deployment
@@ -90,14 +90,14 @@ To avoid incurring future charges, please clean up the resources created.
 To make cloud formation stack delete successfully, please carry out below steps first. Otherwise stack deletion might fail. 
 1.	Please delete all the contents from the S3 bucket that was created by cloud formation script to upload sensor readings
 2.	On AWS IoT Core Console, choose Things option under Manage section. Then press DemoWasteBin thing link. 
-3.	Choose Certificates tab. Then choose each certificate and press detach button.
-4.	Follow step 3 by choosing Certificates option under Secure section
-5.	Finally Revoke and delete all certificates one by one selecting Revoke and Delete option from Actions drop down under Secure section.
+3.	Choose "**Certificates**" tab. Then choose each certificate and press "**detach**" button.
+4.	Follow step 3 by choosing "**Certificates**" option under "**Secure**" section
+5.	Finally "**Revoke**" and "**Delete**" all certificates one by one selecting Revoke and Delete option from "**Actions**" drop down under "**Secure**" section.
 
 To remove the stack:
 
 1. Open the AWS CloudFormation Console.
-2. Choose the *smart-bin-demo-app* project, press "*Delete Stack*" button.
+2. Choose the **smart-bin-demo-app** project, press "*Delete Stack*" button.
 3. Your stack might take some time to be deleted. You can track its progress in the "Events" tab.
 4. When it is done, the status changes from "DELETE_IN_PROGRESS" to "DELETE_COMPLETE". It then disappears from the list.
 
