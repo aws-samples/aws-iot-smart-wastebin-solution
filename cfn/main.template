@@ -56,7 +56,7 @@ Resources:
                   - logs:CreateLogStream
               - Effect: Allow
                 Resource: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:*:log-stream:*
-                Action:      
+                Action:
                   - logs:PutLogEvents
               - Effect: Allow
                 Resource: !Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:role/*
@@ -127,10 +127,10 @@ Resources:
               - Effect: Allow
                 Resource: !Sub arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:*
                 Action:
-                - secretsmanager:DescribeSecret
-                - secretsmanager:GetSecretValue
-                - secretsmanager:PutSecretValue
-                - secretsmanager:UpdateSecretVersionStage
+                  - secretsmanager:DescribeSecret
+                  - secretsmanager:GetSecretValue
+                  - secretsmanager:PutSecretValue
+                  - secretsmanager:UpdateSecretVersionStage
               - Effect: Allow
                 Resource: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:*
                 Action:
@@ -138,7 +138,7 @@ Resources:
                   - logs:CreateLogStream
               - Effect: Allow
                 Resource: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:*:log-stream:*
-                Action:      
+                Action:
                   - logs:PutLogEvents
 
   CertificateProvisioner:
@@ -281,7 +281,7 @@ Resources:
     Properties:
       Description: Permissions required for Greengrass token exchange
       PolicyDocument:
-        Version: '2012-10-17'
+        Version: "2012-10-17"
         Statement:
           - Effect: Allow
             Resource: !Sub arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:cert/*
@@ -295,7 +295,7 @@ Resources:
               - logs:DescribeLogStreams
           - Effect: Allow
             Resource: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:*:log-stream:*
-            Action:      
+            Action:
               - logs:PutLogEvents
           - Effect: Allow
             Resource:
@@ -315,7 +315,6 @@ Resources:
               - s3:ListMultipartUploadParts
               - s3:GetBucketLocation
 
-
   TokenExchangeRoleAlias:
     Type: Custom::IotRoleAlias
     Properties:
@@ -327,35 +326,35 @@ Resources:
     Type: AWS::IoT::Policy
     Properties:
       PolicyDocument:
-        Version: '2012-10-17'
+        Version: "2012-10-17"
         Statement:
-        - Effect: Allow
-          Resource:
-            - !Sub arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topicfilter/*
-            - !Sub arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:client/*
-            - !Sub arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:cert/*
-            - !Sub arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/*
-          Action:
-            - iot:Publish
-            - iot:Subscribe
-            - iot:Receive
-            - iot:Connect
-        - Effect: Allow
-          Resource: '*'
-          Action:
-            - greengrass:*
-        - Effect: Allow
-          Resource: !GetAtt TokenExchangeRoleAlias.roleAliasArn
-          Action: iot:AssumeRoleWithCertificate
-        - Effect: Allow
-          Resource:
-            - !Sub arn:${AWS::Partition}:s3:::${TrashBinS3Bucket}
-            - !Sub arn:${AWS::Partition}:s3:::${TrashBinS3Bucket}/*
-          Action:
-            - s3:PutObject
-            - s3:AbortMultipartUpload
-            - s3:ListMultipartUploadParts
-            - s3:GetBucketLocation
+          - Effect: Allow
+            Resource:
+              - !Sub arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topicfilter/*
+              - !Sub arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:client/*
+              - !Sub arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:cert/*
+              - !Sub arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/*
+            Action:
+              - iot:Publish
+              - iot:Subscribe
+              - iot:Receive
+              - iot:Connect
+          - Effect: Allow
+            Resource: '*'
+            Action:
+              - greengrass:*
+          - Effect: Allow
+            Resource: !GetAtt TokenExchangeRoleAlias.roleAliasArn
+            Action: iot:AssumeRoleWithCertificate
+          - Effect: Allow
+            Resource:
+              - !Sub arn:${AWS::Partition}:s3:::${TrashBinS3Bucket}
+              - !Sub arn:${AWS::Partition}:s3:::${TrashBinS3Bucket}/*
+            Action:
+              - s3:PutObject
+              - s3:AbortMultipartUpload
+              - s3:ListMultipartUploadParts
+              - s3:GetBucketLocation
 
   GreengrassProvisioningPolicy:
     Type: AWS::IoT::Policy
@@ -498,7 +497,7 @@ Resources:
                   - logs:CreateLogStream
               - Effect: Allow
                 Resource: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:*:log-stream:*
-                Action:      
+                Action:
                   - logs:PutLogEvents
 
   IoTAnalyticsPermission:

@@ -9,9 +9,9 @@ if [ -z "$2" ]; then
 else
   STACK_NAME="$1"
   AWS_REGION="$2"
-  THING_NAME=`[ -z "$3" ] && echo "DemoWasteBin"`
-  LOCATION=`[ -z "$4" ] && echo "London"`
-  THING_SERIAL_NO=`[ -z "$5" ] && echo "W123"`
+  THING_NAME=$([ -z "$3" ] && echo "DemoWasteBin")
+  LOCATION=$([ -z "$4" ] && echo "London")
+  THING_SERIAL_NO=$([ -z "$5" ] && echo "W123")
 fi
 
 mkdir -p ./build/certs/

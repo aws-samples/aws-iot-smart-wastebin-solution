@@ -43,26 +43,26 @@ def monitor_waste_bin():
 
             time.sleep(2)
 
-        except Exception as ex:
+        except Exception as e:
             # Catch I/O exception to ignore and continue
-            print(ex)
+            print(e)
             continue
 
 
 def main() -> None:
     try:
         monitor_waste_bin()
-    except Exception as ex:
-        print(ex)
+    except Exception as e:
+        print(e)
         raise
 
 
 if __name__ == "__main__":
     try:
 
-        # Initilize Sensors
+        # Initialize Sensors
         temp_local_image_path = "/tmp/garbage_bin"
-        cloud_bucket_name = os.getenv('TRASH_BUCKET')  # TODO: hardcoded bucket name, has to be dynamic, SSM store maybe?
+        cloud_bucket_name = os.getenv("TRASH_BUCKET")
         image_name = "waste_image.jpg"
         location = "Greenhill"
         post_code = "HA11AA"
@@ -71,11 +71,11 @@ if __name__ == "__main__":
             location, post_code, cloud_bucket_name, temp_local_image_path, image_name
         )
 
-        # Initilize Stream manager client
+        # Initialize Stream manager client
         local_stream_name = "ab3-image-upload"
         uploader = ImageStream(local_stream_name, cloud_bucket_name)
 
-        # Initilize MQTT client
+        # Initialize MQTT client
         mqtt_topic = "smart/trash_bin"
         publisher = MqttPublisher(mqtt_topic)
 
