@@ -29,7 +29,6 @@ Resources:
   RoleAliasProvisionerRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub ${ResourcePrefix}-RoleAliasProvisionerRole
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -44,7 +43,7 @@ Resources:
             Version: "2012-10-17"
             Statement:
               - Effect: Allow
-                Resource: !Sub arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:rolealias/*
+                Resource: !Sub arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:rolealias/GreengrassTokenExchangeAlias
                 Action:
                   - iot:CreateRoleAlias
                   - iot:UpdateRoleAlias
@@ -59,7 +58,7 @@ Resources:
                 Action:
                   - logs:PutLogEvents
               - Effect: Allow
-                Resource: !Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:role/*
+                Resource: !GetAtt TokenExchangeRole.Arn
                 Action:
                   - iam:PassRole
 
@@ -102,7 +101,6 @@ Resources:
   CertificateProvisionerRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub ${ResourcePrefix}-CertificateProvisionerRole
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -249,7 +247,6 @@ Resources:
   FleetProvisioningRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub ${ResourcePrefix}-FleetProvisioningRole
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -264,7 +261,6 @@ Resources:
   TokenExchangeRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub ${ResourcePrefix}-TokenExchangeRole
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -346,15 +342,6 @@ Resources:
           - Effect: Allow
             Resource: !GetAtt TokenExchangeRoleAlias.roleAliasArn
             Action: iot:AssumeRoleWithCertificate
-          - Effect: Allow
-            Resource:
-              - !Sub arn:${AWS::Partition}:s3:::${TrashBinS3Bucket}
-              - !Sub arn:${AWS::Partition}:s3:::${TrashBinS3Bucket}/*
-            Action:
-              - s3:PutObject
-              - s3:AbortMultipartUpload
-              - s3:ListMultipartUploadParts
-              - s3:GetBucketLocation
 
   GreengrassProvisioningPolicy:
     Type: AWS::IoT::Policy
