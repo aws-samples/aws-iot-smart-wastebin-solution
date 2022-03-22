@@ -22,9 +22,21 @@ Target architecture:
 ### Usage
 
 #### Prerequisites
-To deploy the solution, you need an AWS account. If you don’t already have an AWS account,
-create one at <https://aws.amazon.com> by following the on-screen instructions.
-Your access to the AWS account must have IAM permissions to launch AWS CloudFormation templates that create IAM roles.
+To deploy the solution, 
+
+1. you need an AWS account. If you don’t already have an AWS account, create one at <https://aws.amazon.com> by following the on-screen instructions. Your access to the AWS account must have IAM permissions to launch AWS CloudFormation templates that create IAM roles.
+2. clone the repository
+3. An S3 bucket to upload all the artifacts from the cloned respository under src/greengrass-app-component directory
+4. Upload all the artifacts to AWS S3 Bucket
+    1. On AWS Console, choose "*S3*" service
+    2. Choose your bucket created as mentioned step 3
+    3. Press "*Create folder*" button
+    4. Enter "*greengrass-app-component*" in folder name field and press "*Create folder*" button
+    5. Choose the "*greengrass-app-component*" folder and press "*Upload*" button
+    6. Press "*Add files*" button on upload screen and choose all the files from greengrass-app-component
+    7. Finally press "*Upload*" button
+    8. Please make sure that all the artifacts are under "*s3://<your bucket name>/greengrass-app-component*". This is very important to ensure that path is correct for successful deployment on edge gateway
+
 
 #### Deployment
 The application is deployed as an [AWS CloudFormation](https://aws.amazon.com/cloudformation) template.
@@ -51,12 +63,10 @@ cost for using this sample. For full details, see the pricing pages for each AWS
 
 | Parameter label | Default           | Description                                                                     |
 |-----------------|-------------------|---------------------------------------------------------------------------------|
-| CreateMap       | true              | If True, this creates an Amazon Location Map.                                   |
-| MapName         | ExampleMap01      | Must be a unique map resource name. No spaces allowed. For example, ExampleMap. |
-| MapPricingPlan  | RequestBasedUsage | Specifies the pricing plan for your map resource.                               |
-| MapStyle        | VectorEsriStreets | Specifies the map style selected from an available data providers.              |
-| ResourceTags    | LocationDetectApp | Tag resources, which can help you identify and categorize them.                 |
-| Environment     | DEV               | The type of environment to tag your infrastructure with.                        |
+| Stack Name       | smart-bin-demo-app  |  This is AWS CloudFormation name once deployed.
+| ArtefactsBucketName |       | Provide S3 bucket name where you uploaded the artifacts in step 4 of pre-requisite section |
+| ProjectName  | smart-bin-demo-app | smart bin app project name                               |
+| ResourcePrefix        | demo | The AWS resources are prefixed based on the value of this parameter. You must change this value when launching more than once within the same account.              |
 
 When completed, choose *Next*
 1. [Configure stack options](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-console-add-tags.html) if desired, then choose *Next*.
@@ -74,13 +84,22 @@ When completed, choose *Next*
 See the [Local Development](docs/LOCAL_DEVELOPMENT.md) guide to get a copy of the project up and running on your local machine for development and testing purposes.
 
 ### Clean up
+
+To avoid incurring future charges, please clean up the resources created.
+
+To make cloud formation stack delete successfully, please carry out below steps first. Otherwise stack deletion might fail. 
+1.	Please delete all the contents from the S3 bucket that was created by cloud formation script to upload sensor readings
+2.	On AWS IoT Core Console, choose Things option under Manage section. Then press DemoWasteBin thing link. 
+3.	Choose Certificates tab. Then choose each certificate and press detach button.
+4.	Follow step 3 by choosing Certificates option under Secure section
+5.	Finally Revoke and delete all certificates one by one selecting Revoke and Delete option from Actions drop down under Secure section.
+
 To remove the stack:
 
 1. Open the AWS CloudFormation Console.
-1. Choose the *smart-bin-demo-app * project, press "*Delete Stack*" button.
-1. Your stack might take some time to be deleted. You can track its progress in the "Events" tab.
-1. When it is done, the status changes from "DELETE_IN_PROGRESS" to "DELETE_COMPLETE". It then disappears from the list.
-
+2. Choose the *smart-bin-demo-app* project, press "*Delete Stack*" button.
+3. Your stack might take some time to be deleted. You can track its progress in the "Events" tab.
+4. When it is done, the status changes from "DELETE_IN_PROGRESS" to "DELETE_COMPLETE". It then disappears from the list.
 
 
 ## Security
