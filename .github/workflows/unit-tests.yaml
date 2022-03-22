@@ -40,4 +40,4 @@ jobs:
     - name: CloudFormation lint test
       run: make test-cfn-lint
     - name: CloudFormation nag test
-      run: test-cfn-nag
+      run: make test-cfn-nag
