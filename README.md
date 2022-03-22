@@ -31,7 +31,7 @@ To deploy the solution,
     1. On AWS Console, choose "**S3**" service
     2. Choose your bucket created as mentioned step 3
     3. Press "**Create folder**" button
-    4. Enter "**greengrass-app-component**" in folder name field and press "*Create folder*" button
+    4. Enter "**greengrass-app-component**" in folder name field and press "**Create folder**" button
     5. Choose the "**greengrass-app-component**" folder and press "**Upload**" button
     6. Press "**Add files**" button on upload screen and choose all the files from greengrass-app-component
     7. Finally press "**Upload**" button
