@@ -19,17 +19,14 @@ Target architecture:
   <img src="docs/smart-wastebin-iot-architecture.png" alt="AWS Architecture Diagram" />
 </p>
 
-
 ### Usage
 
 #### Prerequisites
-
 To deploy the solution, you need an AWS account. If you don’t already have an AWS account,
 create one at <https://aws.amazon.com> by following the on-screen instructions.
 Your access to the AWS account must have IAM permissions to launch AWS CloudFormation templates that create IAM roles.
 
 #### Deployment
-
 The application is deployed as an [AWS CloudFormation](https://aws.amazon.com/cloudformation) template.
 
 > **Note**
@@ -73,8 +70,10 @@ When completed, choose *Next*
 1. Wait for the CloudFormation stack to launch. Completion is indicated when the "Stack status" is "*CREATE_COMPLETE*".
     * You can monitor the stack creation progress in the "Events" tab.
 
-### Clean up
+## Local Development
+See the [Local Development](docs/LOCAL_DEVELOPMENT.md) guide to get a copy of the project up and running on your local machine for development and testing purposes.
 
+### Clean up
 To remove the stack:
 
 1. Open the AWS CloudFormation Console.
@@ -85,9 +84,7 @@ To remove the stack:
 
 
 ## Security
-
 See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more information.
 
 ## License
-
 This library is licensed under the MIT-0 License. See the LICENSE file.

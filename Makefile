@@ -53,6 +53,11 @@ else
 	@echo "Configuration written to $(CONFIG_FILE) file."
 endif
 
+# Create S3 bucket
+bucket:
+	@$(AWS_CLI) s3 mb s3://$(BUCKET_NAME) \
+	--region $(AWS_REGION)
+
 # Build, Package, Deploy and Destroy
 deploy: $(VENV_NAME) package
 	@printf "\n--> Deploying %s template...\n" $(STACK_NAME)
@@ -69,13 +74,12 @@ package: $(VENV_NAME) build
 	@$(VENV_NAME)/bin/aws cloudformation package \
   	--template-file ./cfn/main.template \
   	--s3-bucket $(BUCKET_NAME) \
-  	--s3-prefix $(STACK_NAME) \
   	--output-template-file ./cfn/packaged.template \
   	--region $(AWS_REGION)
 
 build: $(VENV_NAME)
 	@printf "\n--> Uploading artefacts to the %s S3 bucket ...\n" $(BUCKET_NAME)
-	@$(VENV_NAME)/bin/aws s3 cp ./src/greengrass-app-components s3://$(BUCKET_NAME)/$(STACK_NAME)/greengrass-app-components/ --recursive
+	@$(VENV_NAME)/bin/aws s3 cp ./src/greengrass-app-components s3://$(BUCKET_NAME)/greengrass-app-components/ --recursive
 
 delete:
 	@printf "\n--> Deleting %s stack...\n" $(STACK_NAME)
