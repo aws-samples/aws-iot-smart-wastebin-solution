@@ -67,19 +67,19 @@ set the stack name, AWS region and bucket name.
    ```shell
    AWS Region to create bucket in (e.g. us-east-1)?: us-east-1
    ```
-1. Set AWS Region, for example us-east-1
+1. Set the bucket name, for example my-unique-bucket-name (the name has to be unique)
    ```shell
-   S3 Bucket name (e.g. s3-bucket-name)?: s3-bucket-name
+   S3 Bucket name (e.g. s3-bucket-name)?: my-unique-bucket-name
    ```
-1. Set AWS Region, for example us-east-1
+1. Set the project name, for example aws-iot-wastebin
    ```shell
-   CloudFormation Stack name (e.g. my-project-name)?: my-project-name
+   CloudFormation Stack name (e.g. my-project-name)?: aws-iot-wastebin
    ```
 1. This will create and populate `config.mk` file
    ```shell
    AWS_REGION=us-east-1
-   BUCKET_NAME=s3-bucket-name
-   STACK_NAME=my-project-name
+   BUCKET_NAME=my-unique-bucket-name
+   STACK_NAME=aws-iot-wastebin
    ```
 > Note: You can change these values manually in the `config.mk` file. You can change any variables generated and
 > replace with own values. Also, here is the good place to add your template overrides.
