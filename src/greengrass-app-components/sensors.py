@@ -2,8 +2,7 @@
 # SPDX-License-Identifier: MIT-0
 
 import os
-import shlex
-import subprocess
+from invoke import run
 import sys
 import time
 from datetime import datetime
@@ -21,7 +20,7 @@ class Sensors:
         location: str,
         post_code: str,
         bucket: str,
-        local_garbage_path: str = "/tmp/garbage_bin",
+        local_garbage_path: str,
         image_name: str = "waste_image.jpg",
     ):
 
@@ -119,24 +118,9 @@ class Sensors:
         #     return 0
 
     def trigger_camera(self, shutter_speed: int, clip_duration: int) -> None:
-        mkdir_cmd = f"mkdir -p {self._local_path}"
-        mkdir_cmd_result = subprocess.Popen(
-            shlex.split(mkdir_cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE
-        )
-        done = False
-        # current_time=datetime.now().strftime("%m%d%Y%H%M%S")
         filename = f"{self._local_path}/{self._image_name}"
         cmd = f"libcamera-jpeg --width 800 --height 600 --nopreview -o {filename} -t {clip_duration} --shutter {shutter_speed}"
-        camera_cmd = subprocess.Popen(
-            shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE
-        )
-
-        while not done:
-            return_code = camera_cmd.poll()
-            if return_code is not None:
-                done = True
-            else:
-                time.sleep(2)
+        run(cmd,hide=True)
 
         # return latest camera image timestamp
         statinfo = os.stat(filename)

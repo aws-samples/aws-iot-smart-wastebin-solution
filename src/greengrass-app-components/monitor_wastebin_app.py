@@ -61,7 +61,7 @@ if __name__ == "__main__":
     try:
 
         # Initialize Sensors
-        temp_local_image_path = "/tmp/garbage_bin"
+        temp_local_image_path = os.getcwd()
         cloud_bucket_name = os.getenv("TRASH_BUCKET")
         image_name = "waste_image.jpg"
         location = "Greenhill"
