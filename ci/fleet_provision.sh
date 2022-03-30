@@ -1,7 +1,7 @@
+#!/usr/bin/env bash
+
 #Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #SPDX-License-Identifier: MIT-0
-
-#!/usr/bin/env bash
 
 mkdir -p /greengrass/v2/
 chmod 755 /greengrass/

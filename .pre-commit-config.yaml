@@ -1,0 +1,69 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+
+repos:
+
+# General
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v4.1.0
+  hooks:
+  - id: check-case-conflict
+  - id: detect-private-key
+  - id: trailing-whitespace
+  - id: end-of-file-fixer
+  - id: mixed-line-ending
+    args:
+      - --fix=lf
+    exclude: /package-lock\.json$
+  - id: check-added-large-files
+    args:
+      - --maxkb=1000
+  - id: check-merge-conflict
+
+# Secrets
+- repo: https://github.com/awslabs/git-secrets
+  rev: 80230afa8c8bdeac766a0fece36f95ffaa0be778
+  hooks:
+  - id: git-secrets
+    entry: git-secrets --scan
+    files: .
+
+# CloudFormation
+- repo: https://github.com/aws-cloudformation/cfn-python-lint
+  rev: v0.58.3
+  hooks:
+  - id: cfn-python-lint
+    name: AWS CloudFormation Linter
+    files: cfn/.*\.(template)$
+
+- repo: https://github.com/aws-cloudformation/rain
+  rev: v1.2.0
+  hooks:
+  - id: cfn-format
+    files: cfn/.*\.(template)$
+
+# Python
+- repo: https://github.com/pycqa/pylint
+  rev: v2.12.2
+  hooks:
+    - id: pylint
+      args:
+        - --errors-only
+        - --disable=E0401
+
+- repo: https://github.com/PyCQA/isort
+  rev: 5.10.1
+  hooks:
+    - id: isort
+
+- repo: https://github.com/psf/black
+  rev: 22.1.0
+  hooks:
+    - id: black
+
+# Shell check
+- repo: https://github.com/shellcheck-py/shellcheck-py
+  rev: v0.8.0.4
+  hooks:
+    - id: shellcheck
+      files: ci/.*\.(sh)$
