@@ -52,7 +52,6 @@ cost for using this sample. For full details, see the pricing pages for each AWS
 | **US East (N. Virginia)** (us-east-1) | [![Launch CloudFormation Stack](docs/deploy-to-aws.png)]() |
 | **US West (Oregon)** (us-west-2)      | [![Launch CloudFormation Stack](docs/deploy-to-aws.png)]() |
 | **EU (Ireland)** (eu-west-1)          | [![Launch CloudFormation Stack](docs/deploy-to-aws.png)]() |
-| **EU (London)** (eu-west-2)           | [![Launch CloudFormation Stack](docs/deploy-to-aws.png)]() |
 | **EU (Frankfurt)** (eu-central-1)     | [![Launch CloudFormation Stack](docs/deploy-to-aws.png)]() |
 | **AP (Sydney)** (ap-southeast-2)      | [![Launch CloudFormation Stack](docs/deploy-to-aws.png)]() |
 
@@ -79,6 +78,9 @@ When completed, choose *Next*
 1. Choose *Create Stack*
 1. Wait for the CloudFormation stack to launch. Completion is indicated when the "Stack status" is "*CREATE_COMPLETE*".
     * You can monitor the stack creation progress in the "Events" tab.
+
+## Test the solution
+Once the resources are setup on AWS cloud, please deploy AWS greengrass and application on your IoT gateway i.e. Raspberry PI for testing E2E solution. Please refer the steps [Deploy AWS IoT Greengrass on IoT Gateway](docs/AWS_IoT_Greengrass_Setup.pdf)
 
 ## Local Development
 See the [Local Development](docs/LOCAL_DEVELOPMENT.md) guide to get a copy of the project up and running on your local machine for development and testing purposes.
