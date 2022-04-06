@@ -51,10 +51,10 @@ Parameters:
     Default: DEV
 
 Resources:
-  IOTRoleAliasStack:
+  IoTRoleAliasStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: iot-role-alias.template
+      TemplateURL: role-alias.template
       Parameters:
         ArtefactsBucketName: !Ref ArtefactsBucketName
         ResourcePrefix: !Ref ResourcePrefix
@@ -247,7 +247,7 @@ Resources:
             Action:
               - greengrass:*
           - Effect: Allow
-            Resource: !GetAtt IOTRoleAliasStack.Outputs.TokenExchangeRoleAliasArn
+            Resource: !GetAtt IoTRoleAliasStack.Outputs.IoTTokenExchangeRoleAliasArn
             Action: iot:AssumeRoleWithCertificate
 
   GreengrassProvisioningPolicy:

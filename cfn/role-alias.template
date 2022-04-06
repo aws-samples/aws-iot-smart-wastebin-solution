@@ -38,13 +38,13 @@ Resources:
               - iot:UpdateRoleAlias
               - iot:DeleteRoleAlias
           - Effect: Allow
-            Resource: !GetAtt TokenExchangeRole.Arn
+            Resource: !GetAtt IoTTokenExchangeRole.Arn
             Action:
               - iam:PassRole
       Roles:
         - !Ref IoTRoleAliasRole
 
-  TokenExchangeRole:
+  IoTTokenExchangeRole:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
@@ -56,7 +56,7 @@ Resources:
               Service: credentials.iot.amazonaws.com
       Description: Greengrass core devices assume this role to access AWS resources
 
-  TokenExchangePolicy:
+  IoTTokenExchangePolicy:
     Type: AWS::IAM::ManagedPolicy
     Properties:
       Description: Permissions required for Greengrass token exchange
@@ -85,7 +85,7 @@ Resources:
               - s3:ListMultipartUploadParts
               - s3:GetBucketLocation
       Roles:
-        - !Ref TokenExchangeRole
+        - !Ref IoTTokenExchangeRole
 
   CloudWatchLogsSeviceAccessPolicy:
     Type: AWS::IAM::ManagedPolicy
@@ -104,7 +104,7 @@ Resources:
             - !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:*:log-stream:*
       Roles:
         - !Ref IoTRoleAliasRole
-        - !Ref TokenExchangeRole
+        - !Ref IoTTokenExchangeRole
 
   IoTRoleAliasFunction:
     Type: AWS::Lambda::Function
@@ -142,13 +142,13 @@ Resources:
                 logging.exception(ex)
             cfnresponse.send(event, context, result, data, id)
 
-  TokenExchangeRoleAlias:
+  IoTTokenExchangeRoleAlias:
     Type: Custom::IotRoleAlias
     Properties:
       ServiceToken: !GetAtt IoTRoleAliasFunction.Arn
-      Role: !GetAtt TokenExchangeRole.Arn
+      Role: !GetAtt IoTTokenExchangeRole.Arn
       Alias: GreengrassTokenExchangeAlias
 
 Outputs:
-  TokenExchangeRoleAliasArn:
-    Value: !GetAtt TokenExchangeRoleAlias.roleAliasArn
+  IoTTokenExchangeRoleAliasArn:
+    Value: !GetAtt IoTTokenExchangeRoleAlias.roleAliasArn
