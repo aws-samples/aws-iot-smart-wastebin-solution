@@ -1,9 +1,25 @@
 AWSTemplateFormatVersion: "2010-09-09"
 
-Description: Creates a smart bin demo app
+Description: Creates AWS IoT Smart Wastebin app (uksb-1st924ocu).
 
 Metadata:
   Version: 0.1.0
+
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Main configuration
+        Parameters:
+          - ProjectName
+          - ResourcePrefix
+          - ArtefactsBucketName
+    ParameterLabels:
+      ProjectName:
+        default: Project Name
+      ResourcePrefix:
+        default: Resource Prefix
+      ArtefactsBucketName:
+        default: Artefacts Bucket Name
 
 Parameters:
   ProjectName:
