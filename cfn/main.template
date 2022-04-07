@@ -13,6 +13,7 @@ Metadata:
           - ProjectName
           - ResourcePrefix
           - ArtefactsBucketName
+          - Environment
     ParameterLabels:
       ProjectName:
         default: Project Name
@@ -20,6 +21,8 @@ Metadata:
         default: Resource Prefix
       ArtefactsBucketName:
         default: Artefacts Bucket Name
+      Environment:
+        default: Envitonment Type
 
 Parameters:
   ProjectName:
