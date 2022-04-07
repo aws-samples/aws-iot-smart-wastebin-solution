@@ -60,7 +60,6 @@ Resources:
       TemplateURL: role-alias.template
       Parameters:
         ArtefactsBucketName: !Ref ArtefactsBucketName
-        ResourcePrefix: !Ref ResourcePrefix
         TrashBinS3Bucket: !Ref TrashBinS3Bucket
       Tags:
         - Key: Project
@@ -72,8 +71,6 @@ Resources:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: certificate.template
-      Parameters:
-        ResourcePrefix: !Ref ResourcePrefix
       Tags:
         - Key: Project
           Value: !Ref ProjectName
@@ -539,7 +536,7 @@ Outputs:
   FleetProvisioningTemplate:
     Description: Name of the template to use for fleet provisioning
     Value: !Ref FleetProvisioningTemplate
-    Export:
+    Export: #TODO: remove export
       Name: FleetProvisioningTemplate
 
   TrashBinS3BucketName:
