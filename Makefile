@@ -97,7 +97,7 @@ test: $(VENV_NAME)
 	$(VENV_NAME)/bin/pre-commit run --all-files
 
 lint: $(VENV_NAME)
-	$(VENV_NAME)/bin/cfn-lint cfn/**/*.template
+	$(VENV_NAME)/bin/cfn-lint cfn/**/*.template --ignore-checks=W3002
 
 nag:
 	cfn_nag_scan --input-path cfn
@@ -108,7 +108,7 @@ cfn-publish-package: build
 
 # GitHub actions
 test-cfn-lint:
-	cfn-lint cfn/*.template
+	cfn-lint cfn/**/*.template --ignore-checks=W3002
 
 test-cfn-nag:
 	cfn_nag_scan --input-path cfn
