@@ -1,9 +1,25 @@
 AWSTemplateFormatVersion: "2010-09-09"
 
-Description: Creates a smart bin demo app
+Description: Creates AWS IoT Smart Wastebin app (uksb-1st924ocu).
 
 Metadata:
   Version: 0.1.0
+
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Main configuration
+        Parameters:
+          - ProjectName
+          - ResourcePrefix
+          - ArtefactsBucketName
+    ParameterLabels:
+      ProjectName:
+        default: Project Name
+      ResourcePrefix:
+        default: Resource Prefix
+      ArtefactsBucketName:
+        default: Artefacts Bucket Name
 
 Parameters:
   ProjectName:
@@ -25,78 +41,29 @@ Parameters:
     AllowedPattern: ^[0-9a-zA-Z]+([0-9a-zA-Z-.]*[0-9a-zA-Z])*$
     ConstraintDescription: Artefacts bucket name can include numbers, lowercase letters, uppercase letters, periods (.), and hyphens (-). It cannot start or end with a hyphen (-).
 
-Resources:
-  RoleAliasProvisionerRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Action: sts:AssumeRole
-            Principal:
-              Service: lambda.amazonaws.com
-      Description: Execution role for the RoleAlias custom resource Lambda
-      Policies:
-        - PolicyName: !Sub ${ResourcePrefix}-RoleAliasProvisionerPermissions
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Resource: !Sub arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:rolealias/GreengrassTokenExchangeAlias
-                Action:
-                  - iot:CreateRoleAlias
-                  - iot:UpdateRoleAlias
-                  - iot:DeleteRoleAlias
-              - Effect: Allow
-                Resource: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:*
-                Action:
-                  - logs:CreateLogGroup
-                  - logs:CreateLogStream
-              - Effect: Allow
-                Resource: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:*:log-stream:*
-                Action:
-                  - logs:PutLogEvents
-              - Effect: Allow
-                Resource: !GetAtt TokenExchangeRole.Arn
-                Action:
-                  - iam:PassRole
+  Environment:
+    Description: The type of environment with which to tag your infrastructure. Valid values are DEV (development), TEST (test), or PROD (production).
+    Type: String
+    AllowedValues:
+      - DEV
+      - TEST
+      - PROD
+    Default: DEV
 
-  RoleAliasProvisioner:
-    Type: AWS::Lambda::Function
+Resources:
+  IoTRoleAliasStack:
+    Type: AWS::CloudFormation::Stack
     Properties:
-      FunctionName: !Sub ${ResourcePrefix}-RoleAliasProvisioner
-      Architectures: [arm64]
-      Runtime: python3.9
-      Description: Custom resource handler to provision a IoT role alias from CloudFormation
-      Role: !GetAtt RoleAliasProvisionerRole.Arn
-      Handler: index.handler
-      Code:
-        ZipFile: |
-          import cfnresponse
-          import boto3
-          import logging
-          def handler(event, context):
-            logging.getLogger().setLevel(logging.INFO)
-            logging.info(f'Processing event: {event} | with context: {context}')
-            result, data, id = cfnresponse.FAILED, {}, None
-            try:
-                request_type = event['RequestType']
-                alias = event['ResourceProperties']['Alias']
-                role = event['ResourceProperties']['Role']
-                client = boto3.client('iot')
-                if request_type == 'Create':
-                    data = client.create_role_alias(roleAlias=alias, roleArn=role)
-                    id = data['roleAliasArn']
-                elif request_type == 'Update':
-                    data = client.update_role_alias(roleAlias=alias, roleArn=role)
-                    id = data['roleAliasArn']
-                elif request_type == 'Delete':
-                    data = client.delete_role_alias(roleAlias=alias)
-                result = cfnresponse.SUCCESS
-            except Exception as ex:
-                logging.exception(ex)
-            cfnresponse.send(event, context, result, data, id)
+      TemplateURL: role-alias.template
+      Parameters:
+        ArtefactsBucketName: !Ref ArtefactsBucketName
+        ResourcePrefix: !Ref ResourcePrefix
+        TrashBinS3Bucket: !Ref TrashBinS3Bucket
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref Environment
 
   CertificateProvisionerRole:
     Type: AWS::IAM::Role
@@ -258,66 +225,6 @@ Resources:
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AWSIoTThingsRegistration
 
-  TokenExchangeRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Action: sts:AssumeRole
-            Principal:
-              Service: credentials.iot.amazonaws.com
-      Description: Greengrass core devices assume this role to access AWS resources
-      ManagedPolicyArns:
-        - !Ref TokenExchangePolicy
-
-  TokenExchangePolicy:
-    Type: AWS::IAM::ManagedPolicy
-    Properties:
-      Description: Permissions required for Greengrass token exchange
-      PolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Resource: !Sub arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:cert/*
-            Action:
-              - iot:DescribeCertificate
-          - Effect: Allow
-            Resource: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:*
-            Action:
-              - logs:CreateLogGroup
-              - logs:CreateLogStream
-              - logs:DescribeLogStreams
-          - Effect: Allow
-            Resource: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:*:log-stream:*
-            Action:
-              - logs:PutLogEvents
-          - Effect: Allow
-            Resource:
-              - !Sub arn:${AWS::Partition}:s3:::${ArtefactsBucketName}
-              - !Sub arn:${AWS::Partition}:s3:::${ArtefactsBucketName}/*
-            Action:
-              - s3:GetObject
-              - s3:GetBucketLocation
-          - Effect: Allow
-            Resource:
-              - !Sub arn:${AWS::Partition}:s3:::${TrashBinS3Bucket}
-              - !Sub arn:${AWS::Partition}:s3:::${TrashBinS3Bucket}/*
-            Action:
-              - s3:GetObject
-              - s3:PutObject
-              - s3:AbortMultipartUpload
-              - s3:ListMultipartUploadParts
-              - s3:GetBucketLocation
-
-  TokenExchangeRoleAlias:
-    Type: Custom::IotRoleAlias
-    Properties:
-      ServiceToken: !GetAtt RoleAliasProvisioner.Arn
-      Role: !GetAtt TokenExchangeRole.Arn
-      Alias: GreengrassTokenExchangeAlias
-
   CoreDeviceAccessPolicy:
     Type: AWS::IoT::Policy
     Properties:
@@ -340,7 +247,7 @@ Resources:
             Action:
               - greengrass:*
           - Effect: Allow
-            Resource: !GetAtt TokenExchangeRoleAlias.roleAliasArn
+            Resource: !GetAtt IoTRoleAliasStack.Outputs.IoTTokenExchangeRoleAliasArn
             Action: iot:AssumeRoleWithCertificate
 
   GreengrassProvisioningPolicy:

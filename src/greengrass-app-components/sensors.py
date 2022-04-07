@@ -2,12 +2,12 @@
 # SPDX-License-Identifier: MIT-0
 
 import os
-from invoke import run
 import sys
 import time
 from datetime import datetime
 
 from hx711_i2c import HX711_I2C
+from invoke import run
 
 
 def get_image_full_path(path: str, name: str) -> None:
@@ -120,7 +120,7 @@ class Sensors:
     def trigger_camera(self, shutter_speed: int, clip_duration: int) -> None:
         filename = f"{self._local_path}/{self._image_name}"
         cmd = f"libcamera-jpeg --width 800 --height 600 --nopreview -o {filename} -t {clip_duration} --shutter {shutter_speed}"
-        run(cmd,hide=True)
+        run(cmd, hide=True)
 
         # return latest camera image timestamp
         statinfo = os.stat(filename)

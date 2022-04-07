@@ -22,7 +22,7 @@ Target architecture:
 ### Usage
 
 #### Prerequisites
-To deploy the solution, 
+To deploy the solution,
 
 1. you need an AWS account. If you don’t already have an AWS account, create one at <https://aws.amazon.com> by following the on-screen instructions. Your access to the AWS account must have IAM permissions to launch AWS CloudFormation templates that create IAM roles.
 2. clone the repository
@@ -89,9 +89,9 @@ See the [Local Development](docs/LOCAL_DEVELOPMENT.md) guide to get a copy of th
 
 To avoid incurring future charges, please clean up the resources created.
 
-To make cloud formation stack delete successfully, please carry out below steps first. Otherwise stack deletion might fail. 
+To make cloud formation stack delete successfully, please carry out below steps first. Otherwise stack deletion might fail.
 1.	Please delete all the contents from the S3 bucket that was created by cloud formation script to upload sensor readings
-2.	On AWS IoT Core Console, choose Things option under Manage section. Then press DemoWasteBin thing link. 
+2.	On AWS IoT Core Console, choose Things option under Manage section. Then press DemoWasteBin thing link.
 3.	Choose "**Certificates**" tab. Then choose each certificate and press "**detach**" button.
 4.	Follow step 3 by choosing "**Certificates**" option under "**Secure**" section
 5.	Finally "**Revoke**" and "**Delete**" all certificates one by one selecting Revoke and Delete option from "**Actions**" drop down under "**Secure**" section.

@@ -1,0 +1,154 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: Provision an IoT role alias.
+
+Parameters:
+  ArtefactsBucketName:
+    Type: String
+
+  ResourcePrefix:
+    Type: String
+
+  TrashBinS3Bucket:
+    Type: String
+
+Resources:
+  IoTRoleAliasRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action: sts:AssumeRole
+            Principal:
+              Service: lambda.amazonaws.com
+
+  IoTRoleAliasPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: !Sub Allows the IoTRoleAliasFunction to create alias. Stack ${AWS::StackName}
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Resource: !Sub arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:rolealias/GreengrassTokenExchangeAlias #TODO: remove hardcoded value
+            Action:
+              - iot:CreateRoleAlias
+              - iot:UpdateRoleAlias
+              - iot:DeleteRoleAlias
+          - Effect: Allow
+            Resource: !GetAtt IoTTokenExchangeRole.Arn
+            Action:
+              - iam:PassRole
+      Roles:
+        - !Ref IoTRoleAliasRole
+
+  IoTTokenExchangeRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action: sts:AssumeRole
+            Principal:
+              Service: credentials.iot.amazonaws.com
+      Description: Greengrass core devices assume this role to access AWS resources
+
+  IoTTokenExchangePolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: Permissions required for Greengrass token exchange
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Resource: !Sub arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:cert/*
+            Action:
+              - iot:DescribeCertificate
+          - Effect: Allow
+            Resource:
+              - !Sub arn:${AWS::Partition}:s3:::${ArtefactsBucketName}
+              - !Sub arn:${AWS::Partition}:s3:::${ArtefactsBucketName}/*
+            Action:
+              - s3:GetObject
+              - s3:GetBucketLocation
+          - Effect: Allow
+            Resource:
+              - !Sub arn:${AWS::Partition}:s3:::${TrashBinS3Bucket}
+              - !Sub arn:${AWS::Partition}:s3:::${TrashBinS3Bucket}/*
+            Action:
+              - s3:GetObject
+              - s3:PutObject
+              - s3:AbortMultipartUpload
+              - s3:ListMultipartUploadParts
+              - s3:GetBucketLocation
+      Roles:
+        - !Ref IoTTokenExchangeRole
+
+  CloudWatchLogsSeviceAccessPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: !Sub Allows the Lambda Function to access CloudWatch logs. Stack ${AWS::StackName}
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          Effect: Allow
+          Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+          Resource:
+            - !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:*
+            - !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:*:log-stream:*
+      Roles:
+        - !Ref IoTRoleAliasRole
+        - !Ref IoTTokenExchangeRole
+
+  IoTRoleAliasFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub ${ResourcePrefix}-RoleAliasProvisioner
+      Architectures: [arm64]
+      Runtime: python3.9
+      Description: Custom resource handler to provision a IoT role alias from CloudFormation
+      Role: !GetAtt IoTRoleAliasRole.Arn
+      Handler: index.handler
+      Code:
+        ZipFile: |
+          import cfnresponse
+          import boto3
+          import logging
+          def handler(event, context):
+            logging.getLogger().setLevel(logging.INFO)
+            logging.info(f'Processing event: {event} | with context: {context}')
+            result, data, id = cfnresponse.FAILED, {}, None
+            try:
+                request_type = event['RequestType']
+                alias = event['ResourceProperties']['Alias']
+                role = event['ResourceProperties']['Role']
+                client = boto3.client('iot')
+                if request_type == 'Create':
+                    data = client.create_role_alias(roleAlias=alias, roleArn=role)
+                    id = data['roleAliasArn']
+                elif request_type == 'Update':
+                    data = client.update_role_alias(roleAlias=alias, roleArn=role)
+                    id = data['roleAliasArn']
+                elif request_type == 'Delete':
+                    data = client.delete_role_alias(roleAlias=alias)
+                result = cfnresponse.SUCCESS
+            except Exception as ex:
+                logging.exception(ex)
+            cfnresponse.send(event, context, result, data, id)
+
+  IoTTokenExchangeRoleAlias:
+    Type: Custom::IotRoleAlias
+    Properties:
+      ServiceToken: !GetAtt IoTRoleAliasFunction.Arn
+      Role: !GetAtt IoTTokenExchangeRole.Arn
+      Alias: GreengrassTokenExchangeAlias
+
+Outputs:
+  IoTTokenExchangeRoleAliasArn:
+    Value: !GetAtt IoTTokenExchangeRoleAlias.roleAliasArn
