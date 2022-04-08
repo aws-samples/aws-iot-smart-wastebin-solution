@@ -3,9 +3,6 @@ AWSTemplateFormatVersion: "2010-09-09"
 Description: Setup AWS IoT Analytics channel, pipeline and datastore for collecting data from IoT core channel
 
 Parameters:
-  ResourcePrefix:
-    Type: String
-
   ProjectName:
     Type: String
 
@@ -13,7 +10,6 @@ Resources:
   IdentifyWasteTypeRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub ${ResourcePrefix}-IdentifyWasteTypeRole
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -120,7 +116,7 @@ Resources:
               - sts:AssumeRole
       Path: /
       Policies:
-        - PolicyName: !Sub ${ResourcePrefix}-iot-analytics-role-policy
+        - PolicyName: !Sub ${AWS::StackName}
           PolicyDocument:
             Statement:
               - Effect: Allow

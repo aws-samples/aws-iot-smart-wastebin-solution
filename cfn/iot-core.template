@@ -3,9 +3,6 @@ AWSTemplateFormatVersion: "2010-09-09"
 Description: Setup IoT rule for ingesting data into AWS IoT analytics channel
 
 Parameters:
-  ResourcePrefix:
-    Type: String
-
   IoTAnalyticsChannel:
     Type: String
 

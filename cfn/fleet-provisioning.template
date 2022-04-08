@@ -43,7 +43,6 @@ Resources:
           - Effect: Allow
             Resource: !GetAtt IoTTokenExchangeRole.Arn
             Action:
-              - iam:GetRole
               - iam:PassRole
       Roles:
         - !Ref IoTRoleAliasRole
@@ -122,6 +121,8 @@ Resources:
 
   IoTTokenExchangeRoleAlias:
     Type: Custom::IotRoleAlias
+    DependsOn:
+      - IoTRoleAliasPolicy
     Properties:
       ServiceToken: !GetAtt IoTRoleAliasFunction.Arn
       Role: !GetAtt IoTTokenExchangeRole.Arn

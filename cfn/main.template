@@ -11,7 +11,6 @@ Metadata:
           default: Project configuration
         Parameters:
           - ProjectName
-          - ResourcePrefix
           - Environment
       - Label:
           default: IoT configuration
@@ -21,8 +20,6 @@ Metadata:
     ParameterLabels:
       ProjectName:
         default: Project Name
-      ResourcePrefix:
-        default: Resource Prefix
       Environment:
         default: Envitonment Type
       ArtefactsBucketName:
@@ -37,12 +34,6 @@ Parameters:
     Default: smart-bin-demo-app
     AllowedPattern: ^[a-zA-Z0-9_-]*$
     ConstraintDescription: Must contain only alphanumeric characters.
-
-  ResourcePrefix:
-    Description: AWS Resources are named based on the value of this parameter. You must customise this if you are launching more than one instance of the stack within the same account.
-    Type: String
-    Default: demo
-    AllowedPattern: ^[a-zA-Z0-9_]*$
 
   ArtefactsBucketName:
     Description: S3 bucket name for hosting greengrass custom component app. Artefacts bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-).
@@ -99,7 +90,6 @@ Resources:
     Properties:
       TemplateURL: iot-analytics.template
       Parameters:
-        ResourcePrefix: !Ref ResourcePrefix
         ProjectName: !Ref ProjectName
       Tags:
         - Key: Project
@@ -125,7 +115,6 @@ Resources:
     Properties:
       TemplateURL: iot-core.template
       Parameters:
-        ResourcePrefix: !Ref ResourcePrefix
         IoTAnalyticsChannel: !GetAtt IoTAnalyticsStack.Outputs.IoTAnalyticsChannel
       Tags:
         - Key: Project
