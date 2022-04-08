@@ -54,19 +54,6 @@ Parameters:
     Default: DEV
 
 Resources:
-  IoTRoleAliasStack:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: role-alias.template
-      Parameters:
-        ArtefactsBucketName: !Ref ArtefactsBucketName
-        TrashBinS3Bucket: !Ref TrashBinS3Bucket
-      Tags:
-        - Key: Project
-          Value: !Ref ProjectName
-        - Key: Environment
-          Value: !Ref Environment
-
   IoTCertificateStack:
     Type: AWS::CloudFormation::Stack
     Properties:
@@ -77,456 +64,58 @@ Resources:
         - Key: Environment
           Value: !Ref Environment
 
-  FleetProvisioningRole:
-    Type: AWS::IAM::Role
+  IoTFleetProvisioningStack:
+    Type: AWS::CloudFormation::Stack
     Properties:
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Action: sts:AssumeRole
-            Principal:
-              Service: iot.amazonaws.com
-      Description: Used for provisioning new greengrass core devices
-      ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/service-role/AWSIoTThingsRegistration
-
-  CoreDeviceAccessPolicy:
-    Type: AWS::IoT::Policy
-    Properties:
-      PolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Resource:
-              - !Sub arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topicfilter/*
-              - !Sub arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:client/*
-              - !Sub arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:cert/*
-              - !Sub arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/*
-            Action:
-              - iot:Publish
-              - iot:Subscribe
-              - iot:Receive
-              - iot:Connect
-          - Effect: Allow
-            Resource: '*'
-            Action:
-              - greengrass:*
-          - Effect: Allow
-            Resource: !GetAtt IoTRoleAliasStack.Outputs.IoTTokenExchangeRoleAliasArn
-            Action: iot:AssumeRoleWithCertificate
-
-  GreengrassProvisioningPolicy:
-    Type: AWS::IoT::Policy
-    Properties:
-      PolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Resource: !Sub arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:client/*
-            Action: iot:Connect
-          - Effect: Allow
-            Resource:
-              - !Sub arn:aws:iot:${AWS::Region}:${AWS::AccountId}:topic/$aws/certificates/create/*
-              - !Sub arn:aws:iot:${AWS::Region}:${AWS::AccountId}:topic/$aws/provisioning-templates/${FleetProvisioningTemplate}/provision/*
-            Action:
-              - iot:Publish
-              - iot:Receive
-          - Effect: Allow
-            Resource:
-              - !Sub arn:aws:iot:${AWS::Region}:${AWS::AccountId}:topicfilter/$aws/certificates/create/*
-              - !Sub arn:aws:iot:${AWS::Region}:${AWS::AccountId}:topicfilter/$aws/provisioning-templates/${FleetProvisioningTemplate}/provision/*
-            Action: iot:Subscribe
-
-  FleetProvisioningTemplate:
-    Type: AWS::IoT::ProvisioningTemplate
-    Properties:
-      Description: Template to provision waste bins as IoT things
-      Enabled: true
-      ProvisioningRoleArn: !GetAtt FleetProvisioningRole.Arn
-      TemplateBody: !Sub |
-        {
-          "Parameters": {
-            "ThingName": { "Type": "String" },
-            "SerialNumber" : {
-                  "Type" : "String"
-              },
-            "Location" : {
-                  "Type" : "String",
-                  "Default" : "UK"
-              },
-            "AWS::IoT::Certificate::Id": { "Type": "String" }
-          },
-          "Resources": {
-            "ThingDefinition": {
-              "OverrideSettings": {
-                "AttributePayload": "REPLACE",
-                "ThingGroups": "REPLACE",
-                "ThingTypeName": "REPLACE"
-              },
-              "Properties": {
-                "AttributePayload": {"serialNumber" :  {"Ref" : "SerialNumber"},
-                "location" :  {"Ref" : "Location"}},
-                "ThingName": { "Ref": "ThingName" }
-              },
-              "Type": "AWS::IoT::Thing"
-            },
-            "ThingPolicy": {
-              "Properties": { "PolicyName": "${CoreDeviceAccessPolicy}" },
-              "Type": "AWS::IoT::Policy"
-            },
-            "ThingCertificate": {
-              "Properties": {
-                "CertificateId": { "Ref": "AWS::IoT::Certificate::Id" },
-                "Status": "Active"
-              },
-              "Type": "AWS::IoT::Certificate"
-            }
-          }
-        }
-
-  CertificateAttachment:
-    Type: AWS::IoT::PolicyPrincipalAttachment
-    Properties:
-      PolicyName: !Ref GreengrassProvisioningPolicy
-      Principal: !Sub
-        - '{{resolve:secretsmanager:${Secret}::certificateArn}}'
-        - Secret: !GetAtt IoTCertificateStack.Outputs.IoTCertificateSecret
-
-  IdentifyWasteTypeRole:
-    Type: AWS::IAM::Role
-    Properties:
-      RoleName: !Sub ${ResourcePrefix}-IdentifyWasteTypeRole
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Action: sts:AssumeRole
-            Principal:
-              Service: lambda.amazonaws.com
-      Description: Execution role for the RoleAlias custom resource Lambda
-      Policies:
-        - PolicyName: !Sub ${ResourcePrefix}-IdentifyWasteTypePermissions
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Resource: '*'
-                Action:
-                  - rekognition:DetectLabels
-                  - rekognition:GetTextDetection
-                  - rekognition:DetectText
-              - Effect: Allow
-                Resource:
-                  - !Sub arn:${AWS::Partition}:s3:::${TrashBinS3Bucket}
-                  - !Sub arn:${AWS::Partition}:s3:::${TrashBinS3Bucket}/*
-                Action:
-                  - s3:Get*
-                  - s3:List*
-                  - s3-object-lambda:Get*
-                  - s3-object-lambda:List*
-              - Effect: Allow
-                Resource: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:*
-                Action:
-                  - logs:CreateLogGroup
-                  - logs:CreateLogStream
-              - Effect: Allow
-                Resource: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:*:log-stream:*
-                Action:
-                  - logs:PutLogEvents
-
-  IoTAnalyticsPermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !GetAtt IdentifyWasteType.Arn
-      Action: lambda:InvokeFunction
-      Principal: iotanalytics.amazonaws.com
-
-  IdentifyWasteType:
-    Type: AWS::Lambda::Function
-    Properties:
-      FunctionName: !Sub ${ResourcePrefix}-IdentifyWasteType
-      Architectures: [arm64]
-      Runtime: python3.9
-      Description: Custom resource handler to provision a IoT role alias from CloudFormation
-      Role: !GetAtt IdentifyWasteTypeRole.Arn
-      Handler: index.lambda_handler
-      Timeout: 20
-      MemorySize: 128
-      Code:
-        ZipFile: |
-          import json
-          import boto3
-          import time
-          import datetime
-          def get_event_date(event):
-            if "timestamp" in event[0]:
-              mytimestamp = datetime.datetime.fromtimestamp( event[0]["timestamp"] )
-            else:
-              mytimestamp = datetime.datetime.fromtimestamp( time.time() )
-            return mytimestamp.strftime( "%Y%m%d")
-          def lambda_handler(event, context):
-              if len(event) > 0 and "s3_image_uri" in event[0]:
-                  print(event)
-                  bucket_url=event[0]["s3_image_uri"]
-                  output=bucket_url.split("/",3)
-                  bucket=output[2]
-                  photo=output[3]
-                  client=boto3.client('rekognition')
-                  #process using S3 object
-                  try:
-                      time.sleep(5)
-                      # If using custom models, then please use below syntax
-                      #response = client.detect_custom_labels(Image={'S3Object': {'Bucket': bucket, 'Name': photo}},
-                      #MinConfidence=30,ProjectVersionArn=model_arn)
-                      response = client.detect_labels(Image={'S3Object':{'Bucket':bucket,'Name':photo}},MaxLabels=10)
-                  except Exception as ex:
-                      print(ex)
-                      event[0]["sorted_waste"] = []
-                      event[0]["organic_waste"] = 0
-                      event[0]["solid_waste"] = 0
-                      event[0]["hazardous_waste"] = 0
-                      event[0]["other_waste"] = 0
-                      return event
-                  #Get the custom labels
-                  #labels=response['CustomLabels']
-                  labels=response['Labels']
-                  solid_waste=0
-                  organic_waste=0
-                  hazardous_waste=0
-                  other_waste=0
-                  sorted_waste_items=[]
-                  organic_waste_dict=["orange","bread","banana","orange peel","apple","onion","vegatable","potato"]
-                  solid_waste_dict=["cardboard","plastic","paper","bottle","polethene","paper ball"]
-                  hazardous_waste_dict=["batteries"]
-                  for label in labels:
-                      if label["Name"] in organic_waste_dict:
-                          organic_waste+=1
-                      elif label["Name"] in solid_waste_dict:
-                          solid_waste+=1
-                      elif label["Name"] in hazardous_waste_dict:
-                          hazardous_waste+=1
-                      else:
-                          other_waste+=1
-                      if label["Name"] not in sorted_waste_items:
-                          sorted_waste_items.append(label["Name"])
-                  event[0]["sorted_waste"] = sorted_waste_items
-                  event[0]["organic_waste"] = organic_waste
-                  event[0]["solid_waste"] = solid_waste
-                  event[0]["hazardous_waste"] = hazardous_waste
-                  event[0]["other_waste"] = other_waste
-                  event[0]["event_date"] = get_event_date(event)
-                  print(event)
-              else:
-                  sorted_waste_items=[]
-                  event[0]["sorted_waste"] = sorted_waste_items
-                  event[0]["organic_waste"] = 0
-                  event[0]["solid_waste"] = 0
-                  event[0]["hazardous_waste"] = 0
-                  event[0]["other_waste"] = 0
-                  event[0]["event_date"] = get_event_date(event)
-              return event
-
-  TrashBinS3Bucket:
-    Type: AWS::S3::Bucket
-    Properties:
-      PublicAccessBlockConfiguration:
-        BlockPublicAcls: true
-        BlockPublicPolicy: true
-        IgnorePublicAcls: true
-        RestrictPublicBuckets: true
-
-  TrashBinS3BucketPolicy:
-    Type: AWS::S3::BucketPolicy
-    Properties:
-      Bucket: !Ref TrashBinS3Bucket
-      PolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Resource:
-              - !Sub arn:aws:s3:::${TrashBinS3Bucket}
-              - !Sub arn:aws:s3:::${TrashBinS3Bucket}/*
-            Principal:
-              Service: iotanalytics.amazonaws.com
-            Action:
-              - s3:GetBucketLocation
-              - s3:GetObject
-              - s3:ListBucket
-              - s3:ListBucketMultipartUploads
-              - s3:ListMultipartUploadParts
-              - s3:AbortMultipartUpload
-              - s3:PutObject
-              - s3:DeleteObject
-
-  IoTAnalyticsS3Role:
-    Type: AWS::IAM::Role
-    Properties:
-      RoleName: !Sub ${ResourcePrefix}-IoTAnalyticsS3Role
-      AssumeRolePolicyDocument:
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service:
-                - iotanalytics.amazonaws.com
-            Action:
-              - sts:AssumeRole
-      Path: /
-      Policies:
-        - PolicyName: !Sub ${ResourcePrefix}-iot-analytics-role-policy
-          PolicyDocument:
-            Statement:
-              - Effect: Allow
-                Action:
-                  - s3:GetBucketLocation
-                  - s3:GetObject
-                  - s3:ListBucket
-                  - s3:ListBucketMultipartUploads
-                  - s3:ListMultipartUploadParts
-                  - s3:AbortMultipartUpload"
-                  - s3:PutObject
-                  - s3:DeleteObject
-                Resource:
-                  - !GetAtt TrashBinS3Bucket.Arn
-                  - !Sub ${TrashBinS3Bucket.Arn}/*
-
-  Channel:
-    Type: AWS::IoTAnalytics::Channel
-    Properties:
-      ChannelName: !Sub ${ResourcePrefix}_trash_channel
-      ChannelStorage:
-        CustomerManagedS3:
-          Bucket: !Sub ${TrashBinS3Bucket}
-          RoleArn: !GetAtt IoTAnalyticsS3Role.Arn
+      TemplateURL: fleet-provisioning.template
+      Parameters:
+        ArtefactsBucketName: !Ref ArtefactsBucketName
+        TrashBinS3BucketName: !GetAtt IoTAnalyticsStack.Outputs.TrashBinS3BucketName
+        IoTCertificateSecret: !GetAtt IoTCertificateStack.Outputs.IoTCertificateSecret
       Tags:
-        - Key: name
-          Value: smart-bin-demo
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref Environment
 
-  Datastore:
-    Type: AWS::IoTAnalytics::Datastore
+  IoTAnalyticsStack:
+    Type: AWS::CloudFormation::Stack
     Properties:
-      DatastoreName: !Sub ${ResourcePrefix}_trash_datastore
-      DatastoreStorage:
-        CustomerManagedS3:
-          Bucket: !Sub ${TrashBinS3Bucket}
-          RoleArn: !GetAtt IoTAnalyticsS3Role.Arn
+      TemplateURL: iot-analytics.template
+      Parameters:
+        ResourcePrefix: !Ref ResourcePrefix
+        ProjectName: !Ref ProjectName
       Tags:
-        - Key: name
-          Value: smart-bin-demo
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref Environment
 
-  Pipeline:
-    Type: AWS::IoTAnalytics::Pipeline
+  IoTCustomComponentsStack:
+    Type: AWS::CloudFormation::Stack
     Properties:
-      PipelineName: trash_pipeline
-      PipelineActivities:
-        - Channel:
-            Name: trash_channel_activity
-            ChannelName: !Sub ${Channel}
-            Next: IdentifyWasteType
-          Lambda:
-            Name: IdentifyWasteType
-            LambdaName: !Sub ${IdentifyWasteType}
-            BatchSize: 1
-            Next: trash_datastore_activity
-          Datastore:
-            DatastoreName: !Sub ${Datastore}
-            Name: trash_datastore_activity
+      TemplateURL: custom-component.template
+      Parameters:
+        ArtefactsBucketName: !Ref ArtefactsBucketName
+        TrashBinS3BucketName: !GetAtt IoTAnalyticsStack.Outputs.TrashBinS3BucketName
       Tags:
-        - Key: name
-          Value: smart-bin-demo
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref Environment
 
-  Dataset:
-    Type: AWS::IoTAnalytics::Dataset
+  IoTCoreStack:
+    Type: AWS::CloudFormation::Stack
     Properties:
-      DatasetName: !Sub ${ResourcePrefix}_trash_dataset
-      Actions:
-        - ActionName: SqlAction
-          QueryAction:
-            SqlQuery: !Sub select * from ${Datastore}
-      Triggers:
-        - Schedule:
-            ScheduleExpression: cron(0/15 * * * ? *)
-      RetentionPeriod:
-        Unlimited: false
-        NumberOfDays: 10
-
-  IoTAnalytiucsRoleForIoTCoreRule:
-    Type: AWS::IAM::Role
-    Properties:
-      RoleName: !Sub ${ResourcePrefix}-IoTAnalytiucsRoleForIoTCoreRule
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Action: sts:AssumeRole
-            Principal:
-              Service: iot.amazonaws.com
-      Description: Execution role for the RoleAlias custom resource Lambda
-      Policies:
-        - PolicyName: IoTCoreRulePermissions
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Resource:
-                  - !Sub arn:aws:iotanalytics:${AWS::Region}:${AWS::AccountId}:channel/${Channel}
-                Action:
-                  - iotanalytics:BatchPutMessage
-
-  TrashBinRule:
-    Type: AWS::IoT::TopicRule
-    Properties:
-      RuleName: !Sub ${ResourcePrefix}_trash_data_rule
-      TopicRulePayload:
-        RuleDisabled: false
-        Sql: SELECT * FROM 'smart/trash_bin'
-        Actions:
-          - IotAnalytics:
-              BatchMode: false
-              ChannelName: !Sub ${Channel}
-              RoleArn: !GetAtt IoTAnalytiucsRoleForIoTCoreRule.Arn
-
-  SensorApp:
-    Type: AWS::GreengrassV2::ComponentVersion
-    Properties:
-      InlineRecipe: !Sub |
-        ComponentConfiguration:
-          DefaultConfiguration:
-            accessControl:
-              aws.greengrass.ipc.mqttproxy:
-                monitor_wastebin_app:mqttproxy:1:
-                  operations:
-                  - aws.greengrass#PublishToIoTCore
-                  resources:
-                  - smart/trash_bin
-        ComponentDescription: Uses stream manager to upload a file to an S3 bucket.
-        ComponentName: monitor_wastebin_app
-        ComponentPublisher: sbmane@amazon.com
-        ComponentVersion: 2.0.0
-        Manifests:
-        - Artifacts:
-          - URI: s3://${ArtefactsBucketName}/greengrass-app-components/monitor_wastebin_app.py
-          - URI: s3://${ArtefactsBucketName}/greengrass-app-components/image_stream.py
-          - URI: s3://${ArtefactsBucketName}/greengrass-app-components/hx711_i2c.py
-          - URI: s3://${ArtefactsBucketName}/greengrass-app-components/mqtt_publisher.py
-          - URI: s3://${ArtefactsBucketName}/greengrass-app-components/sensors.py
-          - URI: s3://${ArtefactsBucketName}/greengrass-app-components/requirements.txt
-          Lifecycle:
-            Install: pip3 install --user -r {artifacts:path}/requirements.txt
-            setEnv:
-              TRASH_BUCKET: ${TrashBinS3Bucket}
-            Run: '
-              export PYTHONPATH=$PYTHONPATH:{artifacts:decompressedPath}/stream_manager_sdk;
-              python3 -u {artifacts:path}/monitor_wastebin_app.py
-              '
-          Platform:
-            os: linux
-        RecipeFormatVersion: '2020-01-25'
-
-  TrashLables:
-    Type: AWS::Rekognition::Project
-    Properties:
-      ProjectName: !Sub ${ProjectName}
+      TemplateURL: iot-core.template
+      Parameters:
+        ResourcePrefix: !Ref ResourcePrefix
+        IoTAnalyticsChannel: !GetAtt IoTAnalyticsStack.Outputs.IoTAnalyticsChannel
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref Environment
 
 Outputs:
   CertificateSecret:
@@ -535,10 +124,10 @@ Outputs:
 
   FleetProvisioningTemplate:
     Description: Name of the template to use for fleet provisioning
-    Value: !Ref FleetProvisioningTemplate
+    Value: !GetAtt IoTFleetProvisioningStack.Outputs.FleetProvisioningTemplate
     Export: #TODO: remove export
       Name: FleetProvisioningTemplate
 
   TrashBinS3BucketName:
     Description: Trash bin bucket name
-    Value: !Ref TrashBinS3Bucket
+    Value: !GetAtt IoTAnalyticsStack.Outputs.TrashBinS3BucketName

@@ -1,0 +1,46 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: Creates AWS IoT core. #TODO: update description
+
+Parameters:
+  ResourcePrefix:
+    Type: String
+
+  IoTAnalyticsChannel:
+    Type: String
+
+Resources:
+  IoTAnalytiucsRoleForIoTCoreRule:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action: sts:AssumeRole
+            Principal:
+              Service: iot.amazonaws.com
+      Description: Execution role for the RoleAlias custom resource Lambda
+      Policies:
+        - PolicyName: IoTCoreRulePermissions
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Resource:
+                  - !Sub arn:aws:iotanalytics:${AWS::Region}:${AWS::AccountId}:channel/${IoTAnalyticsChannel}
+                Action:
+                  - iotanalytics:BatchPutMessage
+
+  TrashBinRule:
+    Type: AWS::IoT::TopicRule
+    Properties:
+      RuleName: !Sub ${ResourcePrefix}_trash_data_rule #TODO: can we remove explicit rule name
+      TopicRulePayload:
+        RuleDisabled: false
+        Sql: SELECT * FROM 'smart/trash_bin'
+        Actions:
+          - IotAnalytics:
+              BatchMode: false
+              ChannelName: !Sub ${IoTAnalyticsChannel}
+              RoleArn: !GetAtt IoTAnalytiucsRoleForIoTCoreRule.Arn
