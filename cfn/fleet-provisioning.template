@@ -12,6 +12,9 @@ Parameters:
   IoTCertificateSecret:
     Type: String
 
+  IoTCoreRoleAlias:
+    Type: String
+
 Resources:
   IoTRoleAliasRole:
     Type: AWS::IAM::Role
@@ -32,7 +35,7 @@ Resources:
         Version: "2012-10-17"
         Statement:
           - Effect: Allow
-            Resource: !Sub arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:rolealias/GreengrassTokenExchangeAlias #TODO: remove hardcoded value
+            Resource: !Sub arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:rolealias/${IoTCoreRoleAlias}
             Action:
               - iot:CreateRoleAlias
               - iot:UpdateRoleAlias
@@ -40,6 +43,7 @@ Resources:
           - Effect: Allow
             Resource: !GetAtt IoTTokenExchangeRole.Arn
             Action:
+              - iam:GetRole
               - iam:PassRole
       Roles:
         - !Ref IoTRoleAliasRole
@@ -121,7 +125,7 @@ Resources:
     Properties:
       ServiceToken: !GetAtt IoTRoleAliasFunction.Arn
       Role: !GetAtt IoTTokenExchangeRole.Arn
-      Alias: GreengrassTokenExchangeAlias
+      Alias: !Ref IoTCoreRoleAlias
 
   FleetProvisioningRole:
     Type: AWS::IAM::Role
@@ -135,7 +139,7 @@ Resources:
               Service: iot.amazonaws.com
       Description: Used for provisioning new greengrass core devices
       ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/service-role/AWSIoTThingsRegistration
+        - !Sub arn:${AWS::Partition}:iam::${AWS::Partition}:policy/service-role/AWSIoTThingsRegistration
 
   CoreDeviceAccessPolicy:
     Type: AWS::IoT::Policy
@@ -173,15 +177,15 @@ Resources:
             Action: iot:Connect
           - Effect: Allow
             Resource:
-              - !Sub arn:aws:iot:${AWS::Region}:${AWS::AccountId}:topic/$aws/certificates/create/*
-              - !Sub arn:aws:iot:${AWS::Region}:${AWS::AccountId}:topic/$aws/provisioning-templates/${FleetProvisioningTemplate}/provision/*
+              - !Sub arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/$aws/certificates/create/*
+              - !Sub arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/$aws/provisioning-templates/${FleetProvisioningTemplate}/provision/*
             Action:
               - iot:Publish
               - iot:Receive
           - Effect: Allow
             Resource:
-              - !Sub arn:aws:iot:${AWS::Region}:${AWS::AccountId}:topicfilter/$aws/certificates/create/*
-              - !Sub arn:aws:iot:${AWS::Region}:${AWS::AccountId}:topicfilter/$aws/provisioning-templates/${FleetProvisioningTemplate}/provision/*
+              - !Sub arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topicfilter/$aws/certificates/create/*
+              - !Sub arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topicfilter/$aws/provisioning-templates/${FleetProvisioningTemplate}/provision/*
             Action: iot:Subscribe
 
   FleetProvisioningTemplate:
@@ -242,3 +246,6 @@ Resources:
 Outputs:
   FleetProvisioningTemplate:
     Value: !Ref FleetProvisioningTemplate
+
+  IoTCoreRoleAlias:
+    Value: !Ref IoTCoreRoleAlias

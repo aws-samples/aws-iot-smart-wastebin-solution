@@ -8,28 +8,34 @@ Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
       - Label:
-          default: Main configuration
+          default: Project configuration
         Parameters:
           - ProjectName
           - ResourcePrefix
-          - ArtefactsBucketName
           - Environment
+      - Label:
+          default: IoT configuration
+        Parameters:
+          - ArtefactsBucketName
+          - IoTCoreRoleAlias
     ParameterLabels:
       ProjectName:
         default: Project Name
       ResourcePrefix:
         default: Resource Prefix
-      ArtefactsBucketName:
-        default: Artefacts Bucket Name
       Environment:
         default: Envitonment Type
+      ArtefactsBucketName:
+        default: Artefacts Bucket Name
+      IoTCoreRoleAlias:
+        default: IoT Core Role Alias
 
 Parameters:
   ProjectName:
     Description: The name of the project. The name must only contain alphanumeric characters.
     Type: String
     Default: smart-bin-demo-app
-    AllowedPattern: '[a-zA-Z0-9_-]*'
+    AllowedPattern: ^[a-zA-Z0-9_-]*$
     ConstraintDescription: Must contain only alphanumeric characters.
 
   ResourcePrefix:
@@ -43,6 +49,15 @@ Parameters:
     Type: String
     AllowedPattern: ^[0-9a-zA-Z]+([0-9a-zA-Z-.]*[0-9a-zA-Z])*$
     ConstraintDescription: Artefacts bucket name can include numbers, lowercase letters, uppercase letters, periods (.), and hyphens (-). It cannot start or end with a hyphen (-).
+
+  IoTCoreRoleAlias:
+    Description: Create an AWS IoT Core role alias. The alias must contain 1-128 characters and must include only alphanumeric characters and the =, @, and - symbols.
+    Type: String
+    Default: GreengrassTokenExchangeAlias
+    MinLength: 1
+    MaxLength: 128
+    AllowedPattern: ^[\w=,@-]+$
+    ConstraintDescription: Must contain 1-128 characters and must include only alphanumeric characters and the =, @, and - symbols. Uppercase and lowercase alphabetic characters are allowed.
 
   Environment:
     Description: The type of environment with which to tag your infrastructure. Valid values are DEV (development), TEST (test), or PROD (production).
@@ -72,6 +87,7 @@ Resources:
         ArtefactsBucketName: !Ref ArtefactsBucketName
         TrashBinS3BucketName: !GetAtt IoTAnalyticsStack.Outputs.TrashBinS3BucketName
         IoTCertificateSecret: !GetAtt IoTCertificateStack.Outputs.IoTCertificateSecret
+        IoTCoreRoleAlias: !Ref IoTCoreRoleAlias
       Tags:
         - Key: Project
           Value: !Ref ProjectName
@@ -131,3 +147,7 @@ Outputs:
   TrashBinS3BucketName:
     Description: Trash bin bucket name
     Value: !GetAtt IoTAnalyticsStack.Outputs.TrashBinS3BucketName
+
+  IoTCoreRoleAlias:
+    Description: AWS IoT Core role alias
+    Value: !GetAtt IoTFleetProvisioningStack.Outputs.IoTCoreRoleAlias
