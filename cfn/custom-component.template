@@ -1,0 +1,48 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: This recipe deploys custom sensor application component on to IoT gateway
+
+Parameters:
+  ArtefactsBucketName:
+    Type: String
+
+  TrashBinS3BucketName:
+    Type: String
+
+Resources:
+  SensorApp:
+    Type: AWS::GreengrassV2::ComponentVersion
+    Properties:
+      InlineRecipe: !Sub |
+        ComponentConfiguration:
+          DefaultConfiguration:
+            accessControl:
+              aws.greengrass.ipc.mqttproxy:
+                monitor_wastebin_app:mqttproxy:1:
+                  operations:
+                  - aws.greengrass#PublishToIoTCore
+                  resources:
+                  - smart/trash_bin
+        ComponentDescription: Uses stream manager to upload a file to an S3 bucket.
+        ComponentName: monitor_wastebin_app
+        ComponentPublisher: sbmane@amazon.com
+        ComponentVersion: 2.0.0
+        Manifests:
+        - Artifacts:
+          - URI: s3://${ArtefactsBucketName}/greengrass-app-components/monitor_wastebin_app.py
+          - URI: s3://${ArtefactsBucketName}/greengrass-app-components/image_stream.py
+          - URI: s3://${ArtefactsBucketName}/greengrass-app-components/hx711_i2c.py
+          - URI: s3://${ArtefactsBucketName}/greengrass-app-components/mqtt_publisher.py
+          - URI: s3://${ArtefactsBucketName}/greengrass-app-components/sensors.py
+          - URI: s3://${ArtefactsBucketName}/greengrass-app-components/requirements.txt
+          Lifecycle:
+            Install: pip3 install --user -r {artifacts:path}/requirements.txt
+            setEnv:
+              TRASH_BUCKET: ${TrashBinS3BucketName}
+            Run: '
+              export PYTHONPATH=$PYTHONPATH:{artifacts:decompressedPath}/stream_manager_sdk;
+              python3 -u {artifacts:path}/monitor_wastebin_app.py
+              '
+          Platform:
+            os: linux
+        RecipeFormatVersion: '2020-01-25'

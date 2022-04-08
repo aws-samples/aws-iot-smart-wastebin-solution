@@ -35,6 +35,7 @@ repos:
   - id: cfn-python-lint
     name: AWS CloudFormation Linter
     files: cfn/.*\.(template)$
+    args: [--ignore-checks=W3002]
 
 - repo: https://github.com/aws-cloudformation/rain
   rev: v1.2.0

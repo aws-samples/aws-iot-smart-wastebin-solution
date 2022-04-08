@@ -1,0 +1,202 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: Setup AWS IoT Analytics channel, pipeline and datastore for collecting data from IoT core channel
+
+Parameters:
+  ProjectName:
+    Type: String
+
+Resources:
+  IdentifyWasteTypeRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action: sts:AssumeRole
+            Principal:
+              Service: lambda.amazonaws.com
+
+  IdentifyWasteTypePolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: !Sub Allows the lambda function to invoke Amazon Rekognition service. Stack ${AWS::StackName}
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Resource: '*'
+            Action:
+              - rekognition:DetectLabels
+              - rekognition:GetTextDetection
+              - rekognition:DetectText
+          - Effect: Allow
+            Resource:
+              - !Sub arn:${AWS::Partition}:s3:::${TrashBinS3Bucket}
+              - !Sub arn:${AWS::Partition}:s3:::${TrashBinS3Bucket}/*
+            Action:
+              - s3:Get*
+              - s3:List*
+              - s3-object-lambda:Get*
+              - s3-object-lambda:List*
+          - Effect: Allow
+            Resource: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:*
+            Action:
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+          - Effect: Allow
+            Resource: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:*:log-stream:*
+            Action:
+              - logs:PutLogEvents
+      Roles:
+        - !Ref IdentifyWasteTypeRole
+
+  IoTAnalyticsPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt IdentifyWasteType.Arn
+      Action: lambda:InvokeFunction
+      Principal: iotanalytics.amazonaws.com
+
+  IdentifyWasteType:
+    Type: AWS::Lambda::Function
+    Properties:
+      Architectures: [arm64]
+      Runtime: python3.9
+      Description: Invoke Amazon Rekognition service to identify labels in waste image
+      Role: !GetAtt IdentifyWasteTypeRole.Arn
+      Handler: waste_type.lambda_handler
+      Timeout: 20
+      MemorySize: 128
+      Code: ../src/functions/waste-type
+
+  TrashBinS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  TrashBinS3BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref TrashBinS3Bucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Resource:
+              - !Sub arn:aws:s3:::${TrashBinS3Bucket}
+              - !Sub arn:aws:s3:::${TrashBinS3Bucket}/*
+            Principal:
+              Service: iotanalytics.amazonaws.com
+            Action:
+              - s3:GetBucketLocation
+              - s3:GetObject
+              - s3:ListBucket
+              - s3:ListBucketMultipartUploads
+              - s3:ListMultipartUploadParts
+              - s3:AbortMultipartUpload
+              - s3:PutObject
+              - s3:DeleteObject
+
+  IoTAnalyticsS3Role:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - iotanalytics.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: /
+      Policies:
+        - PolicyName: !Sub ${AWS::StackName}
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetBucketLocation
+                  - s3:GetObject
+                  - s3:ListBucket
+                  - s3:ListBucketMultipartUploads
+                  - s3:ListMultipartUploadParts
+                  - s3:AbortMultipartUpload"
+                  - s3:PutObject
+                  - s3:DeleteObject
+                Resource:
+                  - !GetAtt TrashBinS3Bucket.Arn
+                  - !Sub ${TrashBinS3Bucket.Arn}/*
+
+  IoTAnalyticsChannel:
+    Type: AWS::IoTAnalytics::Channel
+    Properties:
+      ChannelStorage:
+        CustomerManagedS3:
+          Bucket: !Sub ${TrashBinS3Bucket}
+          RoleArn: !GetAtt IoTAnalyticsS3Role.Arn
+      Tags:
+        - Key: name
+          Value: smart-bin-demo
+
+  Datastore:
+    Type: AWS::IoTAnalytics::Datastore
+    Properties:
+      DatastoreStorage:
+        CustomerManagedS3:
+          Bucket: !Sub ${TrashBinS3Bucket}
+          RoleArn: !GetAtt IoTAnalyticsS3Role.Arn
+      Tags:
+        - Key: name
+          Value: smart-bin-demo
+
+  Pipeline:
+    Type: AWS::IoTAnalytics::Pipeline
+    Properties:
+      PipelineActivities:
+        - Channel:
+            Name: trash_channel_activity
+            ChannelName: !Sub ${IoTAnalyticsChannel}
+            Next: IdentifyWasteType
+          Lambda:
+            Name: IdentifyWasteType
+            LambdaName: !Sub ${IdentifyWasteType}
+            BatchSize: 1
+            Next: trash_datastore_activity
+          Datastore:
+            DatastoreName: !Sub ${Datastore}
+            Name: trash_datastore_activity
+      Tags:
+        - Key: name
+          Value: smart-bin-demo
+
+  Dataset:
+    Type: AWS::IoTAnalytics::Dataset
+    Properties:
+      Actions:
+        - ActionName: SqlAction
+          QueryAction:
+            SqlQuery: !Sub select * from ${Datastore}
+      Triggers:
+        - Schedule:
+            ScheduleExpression: cron(0/15 * * * ? *)
+      RetentionPeriod:
+        Unlimited: false
+        NumberOfDays: 10
+
+  TrashLables:
+    Type: AWS::Rekognition::Project
+    Properties:
+      ProjectName: !Sub ${ProjectName}
+
+Outputs:
+  TrashBinS3BucketName:
+    Value: !Ref TrashBinS3Bucket
+
+  IoTAnalyticsChannel:
+    Value: !Ref IoTAnalyticsChannel
