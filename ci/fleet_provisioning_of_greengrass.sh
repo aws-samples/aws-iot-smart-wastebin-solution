@@ -41,7 +41,7 @@ TEMPLATE_NAME=$(aws cloudformation describe-stacks --stack-name "$STACK_NAME" --
 IOT_CORE_ROLE_ALIAS=$(aws cloudformation describe-stacks --stack-name "$STACK_NAME" --region "$AWS_REGION" --query "Stacks[0].Outputs[?OutputKey=='IoTCoreRoleAlias'].OutputValue" --output text)
 ROOT='/greengrass/v2'
 
-cat >build/config.yml <<EOF #TODO: get the hardcoded iotRoleAlias value dynamically
+cat >build/config.yml <<EOF
 ---
 services:
   aws.greengrass.Nucleus:
