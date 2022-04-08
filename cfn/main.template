@@ -141,8 +141,6 @@ Outputs:
   FleetProvisioningTemplate:
     Description: Name of the template to use for fleet provisioning
     Value: !GetAtt IoTFleetProvisioningStack.Outputs.FleetProvisioningTemplate
-    Export: #TODO: remove export
-      Name: FleetProvisioningTemplate
 
   TrashBinS3BucketName:
     Description: Trash bin bucket name

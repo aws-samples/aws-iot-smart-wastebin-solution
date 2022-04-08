@@ -37,7 +37,7 @@ curl -s https://d2s8p88vqu9w66.cloudfront.net/releases/aws-greengrass-FleetProvi
 
 DATA_ENDPOINT=$(aws iot describe-endpoint --endpoint-type iot:Data-ATS --output text)
 CREDENTIALS_ENDPOINT=$(aws iot describe-endpoint --endpoint-type iot:CredentialProvider --output text)
-TEMPLATE_NAME=$(aws cloudformation list-exports | jq -r '.Exports[] | select(.Name=="FleetProvisioningTemplate") | .Value') #TODO: remove export
+TEMPLATE_NAME=$(aws cloudformation describe-stacks --stack-name "$STACK_NAME" --region "$AWS_REGION" --query "Stacks[0].Outputs[?OutputKey=='FleetProvisioningTemplate'].OutputValue" --output text)
 ROOT='/greengrass/v2'
 
 cat >build/config.yml <<EOF #TODO: get the hardcoded iotRoleAlias value dynamically
