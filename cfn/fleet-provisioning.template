@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: "2010-09-09"
 
-Description: Creates AWS IoT fleet. #TODO: update description
+Description: Setup IoT core and greengrass cloud resources for IoT fleet provisioning of IoT device gateway
 
 Parameters:
   ArtefactsBucketName:

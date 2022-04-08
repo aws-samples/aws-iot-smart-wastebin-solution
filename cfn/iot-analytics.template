@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: "2010-09-09"
 
-Description: Creates AWS IoT analytics. #TODO: update description
+Description: Setup AWS IoT Analytics channel, pipeline and datastore for collecting data from IoT core channel
 
 Parameters:
   ResourcePrefix:
@@ -25,12 +25,12 @@ Resources:
   IdentifyWasteTypePolicy:
     Type: AWS::IAM::ManagedPolicy
     Properties:
-      Description: !Sub Allows the <description here...>. Stack ${AWS::StackName} #TODO: please provide description
+      Description: !Sub Allows the lambda function to invoke Amazon Rekognition service. Stack ${AWS::StackName}
       PolicyDocument:
         Version: "2012-10-17"
         Statement:
           - Effect: Allow
-            Resource: '*' #TODO: scope down please
+            Resource: '*'
             Action:
               - rekognition:DetectLabels
               - rekognition:GetTextDetection
@@ -68,7 +68,7 @@ Resources:
     Properties:
       Architectures: [arm64]
       Runtime: python3.9
-      Description: Custom resource handler to provision a IoT role alias from CloudFormation #TODO: seems incorrect
+      Description: Invoke Amazon Rekognition service to identify labels in waste image
       Role: !GetAtt IdentifyWasteTypeRole.Arn
       Handler: waste_type.lambda_handler
       Timeout: 20
@@ -140,7 +140,6 @@ Resources:
   IoTAnalyticsChannel:
     Type: AWS::IoTAnalytics::Channel
     Properties:
-      ChannelName: !Sub ${ResourcePrefix}_trash_channel #TODO: can we remove explicit name?
       ChannelStorage:
         CustomerManagedS3:
           Bucket: !Sub ${TrashBinS3Bucket}
@@ -152,7 +151,6 @@ Resources:
   Datastore:
     Type: AWS::IoTAnalytics::Datastore
     Properties:
-      DatastoreName: !Sub ${ResourcePrefix}_trash_datastore #TODO: can we remove explicit name?
       DatastoreStorage:
         CustomerManagedS3:
           Bucket: !Sub ${TrashBinS3Bucket}
@@ -164,7 +162,6 @@ Resources:
   Pipeline:
     Type: AWS::IoTAnalytics::Pipeline
     Properties:
-      PipelineName: trash_pipeline #TODO: can we remove explicit name?
       PipelineActivities:
         - Channel:
             Name: trash_channel_activity
@@ -185,7 +182,6 @@ Resources:
   Dataset:
     Type: AWS::IoTAnalytics::Dataset
     Properties:
-      DatasetName: !Sub ${ResourcePrefix}_trash_dataset #TODO: can we remove explicit name?
       Actions:
         - ActionName: SqlAction
           QueryAction:

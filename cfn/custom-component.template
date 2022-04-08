@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: "2010-09-09"
 
-Description: Creates AWS IoT custom component. #TODO: update description
+Description: This recipe deploys custom sensor application component on to IoT gateway
 
 Parameters:
   ArtefactsBucketName:

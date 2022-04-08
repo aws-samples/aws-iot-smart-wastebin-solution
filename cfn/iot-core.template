@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: "2010-09-09"
 
-Description: Creates AWS IoT core. #TODO: update description
+Description: Setup IoT rule for ingesting data into AWS IoT analytics channel
 
 Parameters:
   ResourcePrefix:
@@ -35,7 +35,6 @@ Resources:
   TrashBinRule:
     Type: AWS::IoT::TopicRule
     Properties:
-      RuleName: !Sub ${ResourcePrefix}_trash_data_rule #TODO: can we remove explicit rule name
       TopicRulePayload:
         RuleDisabled: false
         Sql: SELECT * FROM 'smart/trash_bin'
