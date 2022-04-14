@@ -5,7 +5,7 @@ repos:
 
 # General
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.1.0
+  rev: v4.2.0
   hooks:
   - id: check-case-conflict
   - id: detect-private-key
@@ -22,7 +22,7 @@ repos:
 
 # Secrets
 - repo: https://github.com/awslabs/git-secrets
-  rev: 80230afa8c8bdeac766a0fece36f95ffaa0be778
+  rev: b9e96b3212fa06aea65964ff0d5cda84ce935f38
   hooks:
   - id: git-secrets
     entry: git-secrets --scan
@@ -30,7 +30,7 @@ repos:
 
 # CloudFormation
 - repo: https://github.com/aws-cloudformation/cfn-python-lint
-  rev: v0.58.4
+  rev: v0.59.0
   hooks:
   - id: cfn-python-lint
     name: AWS CloudFormation Linter
@@ -45,7 +45,7 @@ repos:
 
 # Python
 - repo: https://github.com/pycqa/pylint
-  rev: v2.13.4
+  rev: v2.13.5
   hooks:
     - id: pylint
       args:
