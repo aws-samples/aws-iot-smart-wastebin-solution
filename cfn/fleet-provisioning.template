@@ -90,7 +90,7 @@ Resources:
       Roles:
         - !Ref IoTTokenExchangeRole
 
-  CloudWatchLogsSeviceAccessPolicy:
+  CloudWatchLogsServiceAccessPolicy:
     Type: AWS::IAM::ManagedPolicy
     Properties:
       Description: !Sub Allows the Lambda Function to access CloudWatch logs. Stack ${AWS::StackName}
@@ -149,20 +149,45 @@ Resources:
         Version: "2012-10-17"
         Statement:
           - Effect: Allow
+            Resource: !Sub arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:client/*
+            Action: iot:Connect
+          - Effect: Allow
             Resource:
-              - !Sub arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topicfilter/*
-              - !Sub arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:client/*
-              - !Sub arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:cert/*
-              - !Sub arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/*
+              - !Sub arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/$aws/certificates/create/*
+              - !Sub arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/$aws/provisioning-templates/*/provision/*
             Action:
               - iot:Publish
-              - iot:Subscribe
               - iot:Receive
-              - iot:Connect
           - Effect: Allow
-            Resource: '*'
+            Resource:
+              - !Sub arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topicfilter/$aws/certificates/create/*
+              - !Sub arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topicfilter/$aws/provisioning-templates/*/provision/*
+            Action: iot:Subscribe
+          - Effect: Allow
             Action:
-              - greengrass:*
+              - greengrass:GetComponentVersionArtifact
+              - greengrass:ResolveComponentCandidates
+              - greengrass:GetDeploymentConfiguration
+              - greengrass:ListThingGroupsForCoreDevice
+            Resource: '*'
+          - Effect: Allow
+            Action:
+              - greengrass:PutCertificateAuthorities
+              - greengrass:VerifyClientDeviceIdentity
+            Resource: '*'
+          - Effect: Allow
+            Action:
+              - greengrass:VerifyClientDeviceIoTCertificateAssociation
+            Resource: !Sub arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:thing/*
+          - Effect: Allow
+            Action:
+              - greengrass:GetConnectivityInfo
+              - greengrass:UpdateConnectivityInfo
+            Resource: !Sub arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:thing/*
+          - Effect: Allow
+            Action:
+              - greengrass:Discover
+            Resource: !Sub arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:thing/*
           - Effect: Allow
             Resource: !GetAtt IoTTokenExchangeRoleAlias.roleAliasArn
             Action: iot:AssumeRoleWithCertificate
