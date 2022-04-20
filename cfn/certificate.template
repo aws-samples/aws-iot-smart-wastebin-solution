@@ -80,6 +80,7 @@ Resources:
   IoTCertificateSecret:
     Type: AWS::SecretsManager::Secret
     Properties:
+      KmsKeyId: alias/aws/secretsmanager
       Description: Greengrass fleet provisioning certificate and key info
       SecretString: !Sub '{ "waitHandle": "${IoTCertificateWaitHandle}" }'
 

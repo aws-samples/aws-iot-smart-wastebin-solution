@@ -90,7 +90,7 @@ Resources:
       Roles:
         - !Ref IoTTokenExchangeRole
 
-  CloudWatchLogsSeviceAccessPolicy:
+  CloudWatchLogsServiceAccessPolicy:
     Type: AWS::IAM::ManagedPolicy
     Properties:
       Description: !Sub Allows the Lambda Function to access CloudWatch logs. Stack ${AWS::StackName}
@@ -156,13 +156,22 @@ Resources:
               - !Sub arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/*
             Action:
               - iot:Publish
-              - iot:Subscribe
               - iot:Receive
               - iot:Connect
+              - iot:Subscribe
           - Effect: Allow
             Resource: '*'
             Action:
-              - greengrass:*
+              - greengrass:GetComponentVersionArtifact
+              - greengrass:ResolveComponentCandidates
+              - greengrass:GetDeploymentConfiguration
+              - greengrass:ListThingGroupsForCoreDevice
+              - greengrass:PutCertificateAuthorities
+              - greengrass:VerifyClientDeviceIdentity
+              - greengrass:VerifyClientDeviceIoTCertificateAssociation
+              - greengrass:GetConnectivityInfo
+              - greengrass:UpdateConnectivityInfo
+              - greengrass:Discover
           - Effect: Allow
             Resource: !GetAtt IoTTokenExchangeRoleAlias.roleAliasArn
             Action: iot:AssumeRoleWithCertificate

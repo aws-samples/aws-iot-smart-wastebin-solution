@@ -36,10 +36,15 @@ Resources:
               - !Sub arn:${AWS::Partition}:s3:::${TrashBinS3Bucket}
               - !Sub arn:${AWS::Partition}:s3:::${TrashBinS3Bucket}/*
             Action:
-              - s3:Get*
-              - s3:List*
-              - s3-object-lambda:Get*
-              - s3-object-lambda:List*
+              - s3:GetObject
+              - s3:ListBucketMultipartUploads
+              - s3:ListBucket
+              - s3:GetBucketLocation
+              - s3:ListMultipartUploadParts
+              - s3-object-lambda:GetObject
+              - s3-object-lambda:ListBucket
+              - s3-object-lambda:ListBucketMultipartUploads
+              - s3-object-lambda:ListMultipartUploadParts
           - Effect: Allow
             Resource: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:*
             Action:
@@ -74,6 +79,10 @@ Resources:
   TrashBinS3Bucket:
     Type: AWS::S3::Bucket
     Properties:
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
         BlockPublicPolicy: true
@@ -189,7 +198,7 @@ Resources:
         Unlimited: false
         NumberOfDays: 10
 
-  TrashLables:
+  TrashLabels:
     Type: AWS::Rekognition::Project
     Properties:
       ProjectName: !Sub ${ProjectName}
