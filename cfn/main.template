@@ -3,7 +3,7 @@ AWSTemplateFormatVersion: "2010-09-09"
 Description: Creates AWS IoT Smart Wastebin app (uksb-1st924ocu).
 
 Metadata:
-  Version: 0.1.1
+  Version: 0.2.0
 
   AWS::CloudFormation::Interface:
     ParameterGroups:
@@ -21,7 +21,7 @@ Metadata:
       ProjectName:
         default: Project Name
       Environment:
-        default: Envitonment Type
+        default: Environment Type
       ArtefactsBucketName:
         default: Artefacts Bucket Name
       IoTCoreRoleAlias:
