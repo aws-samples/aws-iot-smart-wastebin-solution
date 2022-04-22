@@ -26,7 +26,7 @@ To deploy the solution,
 
 1. you need an AWS account. If you don’t already have an AWS account, create one at <https://aws.amazon.com> by following the on-screen instructions. Your access to the AWS account must have IAM permissions to launch AWS CloudFormation templates that create IAM roles.
 2. clone the repository
-3. An S3 bucket to upload all the artifacts from the cloned respository under src/greengrass-app-component directory
+3. An S3 bucket to upload all the artifacts from the cloned repository under src/greengrass-app-component directory
 4. Upload all the artifacts to AWS S3 Bucket
     1. On AWS Console, choose "**S3**" service
     2. Choose your bucket created as mentioned step 3
@@ -34,7 +34,7 @@ To deploy the solution,
     4. Enter "**greengrass-app-component**" in folder name field and press "**Create folder**" button
     5. Choose the "**greengrass-app-component**" folder and press "**Upload**" button
     6. Press "**Add files**" button on upload screen and choose all the files from greengrass-app-component
-    7. Finally press "**Upload**" button
+    7. Finally, press "**Upload**" button
     8. Please make sure that all the artifacts are under "**s3://<your bucket name>/greengrass-app-component**". This is very important to ensure that path is correct for successful deployment on edge gateway
 
 
@@ -47,25 +47,25 @@ cost for using this sample. For full details, see the pricing pages for each AWS
 
 1. Deploy the latest CloudFormation template by following the link below for your preferred AWS region:
 
-| Region                                | Launch Template                                            |
-|---------------------------------------|------------------------------------------------------------|
-| **US East (N. Virginia)** (us-east-1) | [![Launch CloudFormation Stack](docs/deploy-to-aws.png)]() |
-| **US West (Oregon)** (us-west-2)      | [![Launch CloudFormation Stack](docs/deploy-to-aws.png)]() |
-| **EU (Ireland)** (eu-west-1)          | [![Launch CloudFormation Stack](docs/deploy-to-aws.png)]() |
-| **EU (Frankfurt)** (eu-central-1)     | [![Launch CloudFormation Stack](docs/deploy-to-aws.png)]() |
-| **AP (Sydney)** (ap-southeast-2)      | [![Launch CloudFormation Stack](docs/deploy-to-aws.png)]() |
+| Region                                | Launch Template                                                                                                                                                                                                                                                                                                              |
+|---------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **US East (N. Virginia)** (us-east-1) | [![Launch CloudFormation Stack](docs/deploy-to-aws.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=aws-iot-smart-wastebin-solution-cfn-main&templateURL=https://s3.amazonaws.com/solution-builders-us-east-1/aws-iot-smart-wastebin-solution/latest/main.template)           |
+| **US West (Oregon)** (us-west-2)      | [![Launch CloudFormation Stack](docs/deploy-to-aws.png)](https://console.aws.amazon.com/cloudformation/home?region=us-west-2#/stacks/new?stackName=aws-iot-smart-wastebin-solution-cfn-main&templateURL=https://s3.amazonaws.com/solution-builders-us-west-2/aws-iot-smart-wastebin-solution/latest/main.template)           |
+| **EU (Ireland)** (eu-west-1)          | [![Launch CloudFormation Stack](docs/deploy-to-aws.png)](https://console.aws.amazon.com/cloudformation/home?region=eu-west-1#/stacks/new?stackName=aws-iot-smart-wastebin-solution-cfn-main&templateURL=https://s3.amazonaws.com/solution-builders-eu-west-1/aws-iot-smart-wastebin-solution/latest/main.template)           |
+| **EU (Frankfurt)** (eu-central-1)     | [![Launch CloudFormation Stack](docs/deploy-to-aws.png)](https://console.aws.amazon.com/cloudformation/home?region=eu-central-1#/stacks/new?stackName=aws-iot-smart-wastebin-solution-cfn-main&templateURL=https://s3.amazonaws.com/solution-builders-eu-central-1/aws-iot-smart-wastebin-solution/latest/main.template)     |
+| **AP (Sydney)** (ap-southeast-2)      | [![Launch CloudFormation Stack](docs/deploy-to-aws.png)](https://console.aws.amazon.com/cloudformation/home?region=ap-southeast-2#/stacks/new?stackName=aws-iot-smart-wastebin-solution-cfn-main&templateURL=https://s3.amazonaws.com/solution-builders-ap-southeast-2/aws-iot-smart-wastebin-solution/latest/main.template) |
 
 2. If prompted, login using your AWS account credentials.
 1. You should see a screen titled "*Create Stack*" at the "*Specify template*" step. The fields specifying the CloudFormation
    template are pre-populated. Choose the *Next* button at the bottom of the page.
 1. On the "*Specify stack details*" screen you can customize the following parameters of the CloudFormation stack:
 
-| Parameter label | Default           | Description                                                                     |
-|-----------------|-------------------|---------------------------------------------------------------------------------|
-| Stack Name       | smart-bin-demo-app  |  This is AWS CloudFormation name once deployed.
-| ArtefactsBucketName |       | Provide S3 bucket name where you uploaded the artifacts in step 4 of pre-requisite section |
-| ProjectName  | smart-bin-demo-app | smart bin app project name                               |
-| ResourcePrefix        | demo | The AWS resources are prefixed based on the value of this parameter. You must change this value when launching more than once within the same account.              |
+| Parameter label     | Default            | Description                                                                                                                                            |
+|---------------------|--------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Stack Name          | smart-bin-demo-app | This is AWS CloudFormation name once deployed.                                                                                                         |
+| ArtefactsBucketName | `required`         | Provide S3 bucket name where you uploaded the artifacts in step 4 of pre-requisite section                                                             |
+| ProjectName         | smart-bin-demo-app | smart bin app project name                                                                                                                             |
+| ResourcePrefix      | demo               | The AWS resources are prefixed based on the value of this parameter. You must change this value when launching more than once within the same account. |
 
 When completed, choose *Next*
 1. [Configure stack options](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-console-add-tags.html) if desired, then choose *Next*.
@@ -80,7 +80,7 @@ When completed, choose *Next*
     * You can monitor the stack creation progress in the "Events" tab.
 
 ## Test the solution
-Once the resources are setup on AWS cloud, please deploy AWS greengrass and application on your IoT gateway i.e. Raspberry PI for testing E2E solution. Please refer the steps [Deploy AWS IoT Greengrass on IoT Gateway](docs/AWS_IoT_Greengrass_Setup.pdf)
+Once the resources are set up on AWS cloud, please deploy AWS greengrass and application on your IoT gateway i.e. Raspberry PI for testing E2E solution. Please refer the steps [Deploy AWS IoT Greengrass on IoT Gateway](docs/AWS_IoT_Greengrass_Setup.pdf)
 
 ## Local Development
 See the [Local Development](docs/LOCAL_DEVELOPMENT.md) guide to get a copy of the project up and running on your local machine for development and testing purposes.
@@ -89,7 +89,7 @@ See the [Local Development](docs/LOCAL_DEVELOPMENT.md) guide to get a copy of th
 
 To avoid incurring future charges, please clean up the resources created.
 
-To make cloud formation stack delete successfully, please carry out below steps first. Otherwise stack deletion might fail.
+To make cloud formation stack delete successfully, please carry out below steps first. Otherwise, stack deletion might fail.
 1.	Please delete all the contents from the S3 bucket that was created by cloud formation script to upload sensor readings
 2.	On AWS IoT Core Console, choose Things option under Manage section. Then press DemoWasteBin thing link.
 3.	Choose "**Certificates**" tab. Then choose each certificate and press "**detach**" button.
