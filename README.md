@@ -1,11 +1,15 @@
-## AWS IoT Smart Wastebin solution
-
-[![Unit Tests](https://github.com/aws-samples/aws-iot-smart-wastebin-solution/workflows/Unit%20Tests/badge.svg)](https://github.com/aws-samples/aws-iot-smart-wastebin-solution/actions)
+<h1 align="center">
+AWS IoT Smart Wastebin solution
+<br>
+   <a href="https://github.com/aws-samples/aws-iot-smart-wastebin-solution/releases"><img alt="GitHub release (latest by date)" src="https://img.shields.io/github/v/release/aws-samples/aws-iot-smart-wastebin-solution?display_name=tag"></a>
+   <a href="https://github.com/aws-samples/aws-iot-smart-wastebin-solution/actions"><img alt="GitHub Workflow Status" src="https://github.com/aws-samples/aws-iot-smart-wastebin-solution/workflows/Unit%20Tests/badge.svg"></a>
+</h1>
 
 This post provides an example of how to build a connected Trash Can IoT solution for local councils.
 As the IoT use cases involve complex ecosystem of technologies right from sensor, device management
 all the way through to analytics layer, the serverless architecture is a great way to start small, validate and
 deploy at scale.
+
 Hence, this post walks you through AWS serverless key architecture components around device
 provisioning, ingesting trash images and waste weight data through AWS IoT Core into AWS IoT
 Analytics, analyze trash image using Amazon Rekognition to enrich waste data and finally store into
