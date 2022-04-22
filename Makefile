@@ -103,7 +103,7 @@ nag:
 	cfn_nag_scan --input-path cfn
 
 # cfn-publish specific
-cfn-publish-package: build
+cfn-publish-package:
 	zip -r packaged.zip -@ < ci/include.lst
 
 # GitHub actions
