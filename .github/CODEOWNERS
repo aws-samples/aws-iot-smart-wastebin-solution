@@ -1,0 +1,3 @@
+# These owners will be the default owners for everything in the repo.
+# @aws-smb-sa-uk will be requested for review when someone opens a pull request.
+* @aws-samples/aws-smb-sa-uk
