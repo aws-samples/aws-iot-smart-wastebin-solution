@@ -66,10 +66,11 @@ cost for using this sample. For full details, see the pricing pages for each AWS
 
 | Parameter label     | Default            | Description                                                                                                                                            |
 |---------------------|--------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Stack Name          | smart-bin-demo-app | This is AWS CloudFormation name once deployed.                                                                                                         |
+| Stack Name          | aws-iot-smart-wastebin-solution | This is AWS CloudFormation name once deployed.                                                                                                         |
 | ArtefactsBucketName | `required`         | Provide S3 bucket name where you uploaded the artifacts in step 4 of pre-requisite section                                                             |
-| ProjectName         | smart-bin-demo-app | smart bin app project name                                                                                                                             |
-| ResourcePrefix      | demo               | The AWS resources are prefixed based on the value of this parameter. You must change this value when launching more than once within the same account. |
+| Project Name         | smart-bin-demo-app | smart bin app project name                                                                                                                             |
+| Environment Type    | Dev                | The type of environment with which to tag your infrastructure. Valid values are DEV (development), TEST (test), or PROD (production) |
+| IoT Core Role Alias | GreengrassTokenExchangeAlias             | Create an AWS IoT Core role alias. The alias must contain 1-128 characters and must include only alphanumeric characters and the =, @, and - symbols. |
 
 When completed, choose *Next*
 1. [Configure stack options](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-console-add-tags.html) if desired, then choose *Next*.
@@ -98,12 +99,12 @@ To make cloud formation stack delete successfully, please carry out below steps 
 2.	On AWS IoT Core Console, choose Things option under Manage section. Then press DemoWasteBin thing link.
 3.	Choose "**Certificates**" tab. Then choose each certificate and press "**detach**" button.
 4.	Follow step 3 by choosing "**Certificates**" option under "**Secure**" section
-5.	Finally "**Revoke**" and "**Delete**" all certificates one by one selecting Revoke and Delete option from "**Actions**" drop down under "**Secure**" section.
+5.	Finally "**Deactivate**" and "**Delete**" all certificates one by one selecting Deactivate and Delete option from "**Actions**" drop down under "**Secure**" section.
 
 To remove the stack:
 
 1. Open the AWS CloudFormation Console.
-2. Choose the **smart-bin-demo-app** project, press "*Delete Stack*" button.
+2. Choose the **aws-iot-smart-wastebin-solution** project, press "*Delete Stack*" button.
 3. Your stack might take some time to be deleted. You can track its progress in the "Events" tab.
 4. When it is done, the status changes from "DELETE_IN_PROGRESS" to "DELETE_COMPLETE". It then disappears from the list.
 

@@ -21,7 +21,7 @@ Metadata:
       ProjectName:
         default: Project Name
       Environment:
-        default: Envitonment Type
+        default: Environment Type
       ArtefactsBucketName:
         default: Artefacts Bucket Name
       IoTCoreRoleAlias:
